@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collection Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #F4F7FB;
+  --surface: #FFFFFF;
+  --surface2: #EDF1F7;
+  --border: #D6DDE8;
+  --text: #0D1B2A;
+  --text2: #4A5568;
+  --text3: #8A9BB0;
+  --accent: #0D9488;
+  --accent-light: #CCFBF1;
+  --danger: #DC2626;
+  --warning: #D97706;
+  --good: #059669;
+  --nav-bg: #0D1B2A;
+  --nav-text: #94A3B8;
+  --nav-active: #14B8A6;
+  --shadow: 0 1px 3px rgba(13,27,42,0.08), 0 1px 2px rgba(13,27,42,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1628;
+    --surface: #0F2035;
+    --surface2: #152848;
+    --border: #1E3A5F;
+    --text: #EDF2F7;
+    --text2: #94A3B8;
+    --text3: #4A5568;
+    --accent: #14B8A6;
+    --accent-light: #134E4A;
+    --danger: #F87171;
+    --warning: #FBBf24;
+    --good: #34D399;
+    --nav-bg: #060E1A;
+    --nav-text: #64748B;
+    --nav-active: #14B8A6;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1628;
+  --surface: #0F2035;
+  --surface2: #152848;
+  --border: #1E3A5F;
+  --text: #EDF2F7;
+  --text2: #94A3B8;
+  --text3: #4A5568;
+  --accent: #14B8A6;
+  --accent-light: #134E4A;
+  --danger: #F87171;
+  --warning: #FBBF24;
+  --good: #34D399;
+  --nav-bg: #060E1A;
+  --nav-text: #64748B;
+  --nav-active: #14B8A6;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAV */
+nav {
+  background: var(--nav-bg);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 16px 0;
+  margin-right: 32px;
+  white-space: nowrap;
+}
+.nav-brand span { color: var(--nav-active); }
+.nav-tabs { display: flex; gap: 0; flex: 1; }
+.nav-tab {
+  padding: 16px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--nav-text);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.nav-tab:hover { color: #CBD5E1; }
+.nav-tab.active { color: var(--nav-active); border-bottom-color: var(--nav-active); }
+.nav-meta {
+  font-size: 11px;
+  color: var(--nav-text);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-left: auto;
+}
+
+/* MAIN */
+main { flex: 1; padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%; }
+
+/* SECTION */
+.section { display: none; }
+.section.active { display: block; }
+
+/* KPI ROW */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+}
+.kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.kpi-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
+.kpi-value.danger { color: var(--danger); }
+.kpi-value.warning { color: var(--warning); }
+.kpi-value.good { color: var(--good); }
+.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.card-actions { display: flex; gap: 8px; align-items: center; }
+
+/* SEARCH */
+.search-input {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  width: 200px;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--surface2);
+  cursor: pointer;
+  user-select: none;
+}
+th:hover { color: var(--text2); }
+th.sorted { color: var(--accent); }
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  white-space: nowrap;
+}
+td.num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+}
+td.name { color: var(--text); font-weight: 500; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* AGING BARS */
+.aging-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; gap: 1px; min-width: 80px; }
+.aging-seg { height: 100%; }
+
+/* CHIP */
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.chip-sse { background: var(--accent-light); color: var(--accent); }
+.chip-recovery { background: #FEF3C7; color: #92400E; }
+.chip-no { background: var(--surface2); color: var(--text3); }
+
+/* CHART */
+.chart-container { padding: 20px; }
+canvas { display: block; }
+
+/* COHORT */
+.cohort-wrap { overflow-x: auto; }
+.cohort-table { font-size: 11.5px; }
+.cohort-table th { font-size: 10px; }
+.cohort-table td.num { font-size: 11px; }
+.cohort-table td.sale-month { font-weight: 600; color: var(--text); white-space: nowrap; }
+.heat-0 { background: transparent; }
+.heat-1 { background: rgba(20,184,166,0.08); }
+.heat-2 { background: rgba(20,184,166,0.16); }
+.heat-3 { background: rgba(20,184,166,0.28); }
+.heat-4 { background: rgba(20,184,166,0.42); }
+.heat-5 { background: rgba(20,184,166,0.58); color: var(--surface) !important; }
+
+/* PAGINATION */
+.pagination { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text3); }
+.page-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+.page-btn:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 13px; }
+.empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+/* LOADING */
+.loading { text-align: center; padding: 48px; color: var(--text3); }
+.spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">EMotorad <span>·</span> Collection</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="outstanding">Dealer Outstanding</div>
+    <div class="nav-tab" data-tab="collection">Daily Collection</div>
+    <div class="nav-tab" data-tab="cohort">Sales vs Collection</div>
+  </div>
+  <div class="nav-meta" id="refreshMeta">—</div>
+</nav>
+
+<main>
+
+  <!-- DEALER OUTSTANDING -->
+  <div class="section active" id="tab-outstanding">
+    <div class="kpi-row" id="kpi-outstanding">
+      <div class="loading"><div class="spinner"></div><br>Loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Dealer Aging Summary</span>
+        <div class="card-actions">
+          <input class="search-input" id="search-outstanding" placeholder="Search dealer…" autocomplete="off">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="table-outstanding">
+          <thead>
+            <tr>
+              <th data-col="customer_name">Dealer</th>
+              <th data-col="territory">Territory</th>
+              <th data-col="0_30" class="num">0–30</th>
+              <th data-col="31_60" class="num">31–60</th>
+              <th data-col="61_90" class="num">61–90</th>
+              <th data-col="91_120" class="num">91–120</th>
+              <th data-col="121_150" class="num">121–150</th>
+              <th data-col="151_above" class="num">151+</th>
+              <th data-col="total_outstanding" class="num sorted">Total Outstanding</th>
+              <th>Aging</th>
+              <th>SSE</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-outstanding">
+            <tr><td colspan="11"><div class="loading"><div class="spinner"></div><br>Loading data…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="page-outstanding"></div>
+    </div>
+  </div>
+
+  <!-- DAILY COLLECTION -->
+  <div class="section" id="tab-collection">
+    <div class="kpi-row" id="kpi-collection">
+      <div class="loading"><div class="spinner"></div><br>Loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Daily Collection — Last 90 Days</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="chart-collection" height="260"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Collection Entries</span>
+        <div class="card-actions">
+          <input class="search-input" id="search-collection" placeholder="Search dealer…" autocomplete="off">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="table-collection">
+          <thead>
+            <tr>
+              <th data-col="posting_date">Date</th>
+              <th data-col="party_name">Dealer</th>
+              <th data-col="Dealer Region">Region</th>
+              <th data-col="payment_type">Type</th>
+              <th data-col="paid_amount" class="num sorted">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-collection">
+            <tr><td colspan="5"><div class="loading"><div class="spinner"></div><br>Loading data…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="page-collection"></div>
+    </div>
+  </div>
+
+  <!-- COHORT -->
+  <div class="section" id="tab-cohort">
+    <div class="kpi-row" id="kpi-cohort">
+      <div class="loading"><div class="spinner"></div><br>Loading…</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Sales vs Collection Cohort</span>
+        <div class="card-actions">
+          <span style="font-size:11px;color:var(--text3)">Values = ₹ (invoice base)</span>
+        </div>
+      </div>
+      <div class="cohort-wrap">
+        <div id="cohort-table-container"><div class="loading"><div class="spinner"></div><br>Loading…</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const fmt = n => n == null ? '—' : '₹' + Math.round(n).toLocaleString('en-IN');
+const fmtShort = n => {
+  if (n == null) return '—';
+  const a = Math.abs(n);
+  if (a >= 1e7) return '₹' + (n/1e7).toFixed(2) + ' Cr';
+  if (a >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' L';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+};
+
+// Tab switching
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Load JSON
+async function loadJSON(path) {
+  try {
+    const r = await fetch(path);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch(e) {
+    return null;
+  }
+}
+
+// ─── OUTSTANDING ──────────────────────────────────────────────
+let outstandingData = [], outstandingFiltered = [], outstandingSort = {col:'total_outstanding', asc:false};
+let outPage = 1; const outPageSize = 50;
+
+function renderOutstanding() {
+  const kpi = document.getElementById('kpi-outstanding');
+  const total = outstandingData.reduce((s,r) => s + (r.total_outstanding||0), 0);
+  const over90 = outstandingData.reduce((s,r) => s + (r['91_120']||0) + (r['121_150']||0) + (r['151_above']||0), 0);
+  const dealers = outstandingData.length;
+  const pending = outstandingData.filter(r => (r['91_120']||0)+(r['121_150']||0)+(r['151_above']||0) > 0).length;
+  kpi.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Outstanding</div><div class="kpi-value">${fmtShort(total)}</div></div>
+    <div class="kpi"><div class="kpi-label">Overdue 90+ Days</div><div class="kpi-value danger">${fmtShort(over90)}</div><div class="kpi-sub">${((over90/total)*100).toFixed(1)}% of total</div></div>
+    <div class="kpi"><div class="kpi-label">Dealers</div><div class="kpi-value">${dealers}</div></div>
+    <div class="kpi"><div class="kpi-label">Dealers with 90+ Due</div><div class="kpi-value warning">${pending}</div></div>
+  `;
+  renderOutstandingTable();
+}
+
+function sortOutstanding(data) {
+  const {col, asc} = outstandingSort;
+  return [...data].sort((a,b) => {
+    const av = a[col]||0, bv = b[col]||0;
+    if (typeof av === 'string') return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return asc ? av-bv : bv-av;
+  });
+}
+
+function renderOutstandingTable() {
+  const sorted = sortOutstanding(outstandingFiltered);
+  const total = sorted.length;
+  const pages = Math.ceil(total/outPageSize) || 1;
+  outPage = Math.min(outPage, pages);
+  const slice = sorted.slice((outPage-1)*outPageSize, outPage*outPageSize);
+  const tbody = document.getElementById('tbody-outstanding');
+  if (!slice.length) { tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">📭</div>No dealers found</div></td></tr>'; return; }
+  tbody.innerHTML = slice.map(r => {
+    const tot = r.total_outstanding||0;
+    const segs = [
+      {v: r['0_30']||0, c:'#34D399'},
+      {v: r['31_60']||0, c:'#6EE7B7'},
+      {v: r['61_90']||0, c:'#FBBf24'},
+      {v: r['91_120']||0, c:'#F97316'},
+      {v: r['121_150']||0, c:'#EF4444'},
+      {v: r['151_above']||0, c:'#991B1B'},
+    ];
+    const bar = segs.map(s => tot > 0 ? `<div class="aging-seg" style="flex:${s.v/tot};background:${s.c}"></div>` : '').join('');
+    const sseChip = r['is_sse_eligible'] === 'Yes' ? '<span class="chip chip-sse">SSE</span>' : '';
+    const recChip = r['Is Recovery Dealer'] === 'Yes' ? '<span class="chip chip-recovery">Recovery</span>' : '';
+    return `<tr>
+      <td class="name" title="${r.customer_name||''}">${r.customer_name||'—'}</td>
+      <td>${r.territory||'—'}</td>
+      <td class="num">${fmt(r['0_30'])}</td>
+      <td class="num">${fmt(r['31_60'])}</td>
+      <td class="num" style="${(r['61_90']||0)>0?'color:var(--warning)':''}">${fmt(r['61_90'])}</td>
+      <td class="num" style="${(r['91_120']||0)>0?'color:var(--danger)':''}">${fmt(r['91_120'])}</td>
+      <td class="num" style="${(r['121_150']||0)>0?'color:var(--danger)':''}">${fmt(r['121_150'])}</td>
+      <td class="num" style="${(r['151_above']||0)>0?'color:var(--danger)':''}">${fmt(r['151_above'])}</td>
+      <td class="num" style="font-weight:600">${fmt(tot)}</td>
+      <td><div class="aging-bar">${bar}</div></td>
+      <td>${sseChip}${recChip}</td>
+    </tr>`;
+  }).join('');
+  // Pagination
+  const pag = document.getElementById('page-outstanding');
+  pag.innerHTML = `
+    <button class="page-btn" id="out-prev" ${outPage===1?'disabled':''}>← Prev</button>
+    <span>Page ${outPage} of ${pages} &nbsp;·&nbsp; ${total} dealers</span>
+    <button class="page-btn" id="out-next" ${outPage>=pages?'disabled':''}>Next →</button>
+  `;
+  document.getElementById('out-prev').onclick = () => { outPage--; renderOutstandingTable(); };
+  document.getElementById('out-next').onclick = () => { outPage++; renderOutstandingTable(); };
+}
+
+document.getElementById('search-outstanding').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  outstandingFiltered = q ? outstandingData.filter(r => (r.customer_name||'').toLowerCase().includes(q) || (r.territory||'').toLowerCase().includes(q)) : [...outstandingData];
+  outPage = 1;
+  renderOutstandingTable();
+});
+
+document.querySelectorAll('#table-outstanding th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (outstandingSort.col === col) outstandingSort.asc = !outstandingSort.asc;
+    else { outstandingSort.col = col; outstandingSort.asc = false; }
+    document.querySelectorAll('#table-outstanding th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    outPage = 1;
+    renderOutstandingTable();
+  });
+});
+
+// ─── DAILY COLLECTION ─────────────────────────────────────────
+let collectionData = [], collectionFiltered = [], collSort = {col:'posting_date', asc:false};
+let collPage = 1; const collPageSize = 50;
+
+function renderCollection() {
+  const kpi = document.getElementById('kpi-collection');
+  const total = collectionData.reduce((s,r) => s+(r.paid_amount||0),0);
+  const days30 = collectionData.filter(r => new Date(r.posting_date) >= new Date(Date.now()-30*864e5));
+  const total30 = days30.reduce((s,r) => s+(r.paid_amount||0),0);
+  const entries = collectionData.length;
+  kpi.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Collected (90d)</div><div class="kpi-value good">${fmtShort(total)}</div></div>
+    <div class="kpi"><div class="kpi-label">Last 30 Days</div><div class="kpi-value">${fmtShort(total30)}</div></div>
+    <div class="kpi"><div class="kpi-label">Transactions (90d)</div><div class="kpi-value">${entries}</div></div>
+    <div class="kpi"><div class="kpi-label">Avg per Day</div><div class="kpi-value">${fmtShort(total/90)}</div></div>
+  `;
+  renderCollectionChart();
+  renderCollectionTable();
+}
+
+function renderCollectionChart() {
+  // Group by date
+  const byDate = {};
+  collectionData.forEach(r => {
+    const d = (r.posting_date||'').slice(0,10);
+    if (d) byDate[d] = (byDate[d]||0) + (r.paid_amount||0);
+  });
+  const dates = Object.keys(byDate).sort();
+  const values = dates.map(d => byDate[d]);
+  const canvas = document.getElementById('chart-collection');
+  const container = canvas.parentElement;
+  const W = container.clientWidth - 40;
+  const H = 260;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  if (!dates.length) return;
+
+  const pad = {top:20, right:20, bottom:50, left:80};
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+  const maxV = Math.max(...values) * 1.1 || 1;
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#14B8A6';
+  const text3 = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#8A9BB0';
+  const border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#D6DDE8';
+
+  // Grid lines
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const y = pad.top + (cH/4)*i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+cW, y); ctx.stroke();
+    ctx.fillStyle = text3;
+    ctx.font = '10px IBM Plex Mono, monospace';
+    ctx.textAlign = 'right';
+    const val = maxV*(1-i/4);
+    ctx.fillText(fmtShort(val), pad.left-6, y+4);
+  }
+
+  // Bars
+  const barW = Math.max(2, Math.min(16, cW/dates.length - 2));
+  const step = cW/dates.length;
+  dates.forEach((d, i) => {
+    const x = pad.left + i*step + step/2;
+    const h = (values[i]/maxV)*cH;
+    const y = pad.top + cH - h;
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.85;
+    ctx.fillRect(x - barW/2, y, barW, h);
+    ctx.globalAlpha = 1;
+  });
+
+  // X labels (every 7th)
+  ctx.fillStyle = text3;
+  ctx.font = '10px IBM Plex Sans, sans-serif';
+  ctx.textAlign = 'center';
+  dates.forEach((d, i) => {
+    if (i % 7 !== 0) return;
+    const x = pad.left + i*step + step/2;
+    const label = d.slice(5); // MM-DD
+    ctx.fillText(label, x, pad.top+cH+18);
+  });
+}
+
+function renderCollectionTable() {
+  const sorted = [...collectionFiltered].sort((a,b) => {
+    const {col, asc} = collSort;
+    const av = a[col]||0, bv = b[col]||0;
+    if (typeof av === 'string') return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return asc ? av-bv : bv-av;
+  });
+  const total = sorted.length;
+  const pages = Math.ceil(total/collPageSize)||1;
+  collPage = Math.min(collPage, pages);
+  const slice = sorted.slice((collPage-1)*collPageSize, collPage*collPageSize);
+  const tbody = document.getElementById('tbody-collection');
+  if (!slice.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">📭</div>No entries found</div></td></tr>'; return; }
+  tbody.innerHTML = slice.map(r => `<tr>
+    <td>${(r.posting_date||'').slice(0,10)}</td>
+    <td class="name" title="${r.party_name||''}">${r.party_name||'—'}</td>
+    <td>${r['Dealer Region']||'—'}</td>
+    <td>${r.payment_type||'—'}</td>
+    <td class="num" style="color:var(--good);font-weight:600">${fmt(r.paid_amount)}</td>
+  </tr>`).join('');
+  const pag = document.getElementById('page-collection');
+  pag.innerHTML = `
+    <button class="page-btn" id="coll-prev" ${collPage===1?'disabled':''}>← Prev</button>
+    <span>Page ${collPage} of ${pages} &nbsp;·&nbsp; ${total} entries</span>
+    <button class="page-btn" id="coll-next" ${collPage>=pages?'disabled':''}>Next →</button>
+  `;
+  document.getElementById('coll-prev').onclick = () => { collPage--; renderCollectionTable(); };
+  document.getElementById('coll-next').onclick = () => { collPage++; renderCollectionTable(); };
+}
+
+document.getElementById('search-collection').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  collectionFiltered = q ? collectionData.filter(r => (r.party_name||'').toLowerCase().includes(q)) : [...collectionData];
+  collPage = 1;
+  renderCollectionTable();
+});
+
+// ─── COHORT ───────────────────────────────────────────────────
+function renderCohort(data) {
+  const kpi = document.getElementById('kpi-cohort');
+
+  // Build pivot
+  const saleMonths = [...new Set(data.map(r => r['Sale Month']))].sort((a,b) => {
+    const sa = data.find(r=>r['Sale Month']===a)?.['Sale Month Sort']||0;
+    const sb = data.find(r=>r['Sale Month']===b)?.['Sale Month Sort']||0;
+    return sa-sb;
+  });
+  const collMonths = [...new Set(data.map(r => r['Collection Month']))].sort((a,b) => {
+    const sa = data.find(r=>r['Collection Month']===a)?.['Collection Month Sort']||0;
+    const sb = data.find(r=>r['Collection Month']===b)?.['Collection Month Sort']||0;
+    return sa-sb;
+  });
+
+  // Aggregate
+  const pivot = {};
+  const rowTotals = {};
+  const colTotals = {};
+  let grandTotal = 0;
+  data.forEach(r => {
+    const sm = r['Sale Month'], cm = r['Collection Month'], v = r.sub_total||0;
+    if (!pivot[sm]) pivot[sm] = {};
+    pivot[sm][cm] = (pivot[sm][cm]||0) + v;
+    rowTotals[sm] = (rowTotals[sm]||0) + v;
+    colTotals[cm] = (colTotals[cm]||0) + v;
+    grandTotal += v;
+  });
+
+  // KPIs
+  const pending = colTotals['Pending']||0;
+  const collected = grandTotal - pending;
+  kpi.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Invoiced</div><div class="kpi-value">${fmtShort(grandTotal)}</div></div>
+    <div class="kpi"><div class="kpi-label">Collected</div><div class="kpi-value good">${fmtShort(collected)}</div><div class="kpi-sub">${((collected/grandTotal)*100).toFixed(1)}%</div></div>
+    <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value warning">${fmtShort(pending)}</div><div class="kpi-sub">${((pending/grandTotal)*100).toFixed(1)}%</div></div>
+    <div class="kpi"><div class="kpi-label">Sale Months</div><div class="kpi-value">${saleMonths.length}</div></div>
+  `;
+
+  // Max for heat
+  const allVals = saleMonths.flatMap(sm => collMonths.map(cm => pivot[sm]?.[cm]||0));
+  const maxVal = Math.max(...allVals)||1;
+
+  function heatClass(v) {
+    if (!v) return 'heat-0';
+    const r = v/maxVal;
+    if (r > 0.8) return 'heat-5';
+    if (r > 0.6) return 'heat-4';
+    if (r > 0.4) return 'heat-3';
+    if (r > 0.2) return 'heat-2';
+    return 'heat-1';
+  }
+
+  const container = document.getElementById('cohort-table-container');
+  container.innerHTML = `
+    <table class="cohort-table" style="width:100%;border-collapse:collapse;font-size:11.5px">
+      <thead>
+        <tr>
+          <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap">Sale Month</th>
+          ${collMonths.map(cm => `<th style="padding:10px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap${cm==='Pending'?';color:var(--warning)':cm==='paid before invoice'?';color:var(--text3)':''}">${cm}</th>`).join('')}
+          <th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:600;color:var(--text);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2)">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${saleMonths.map(sm => `<tr>
+          <td style="padding:8px 14px;font-weight:600;color:var(--text);white-space:nowrap;border-bottom:1px solid var(--border)">${sm}</td>
+          ${collMonths.map(cm => {
+            const v = pivot[sm]?.[cm]||0;
+            const hc = heatClass(v);
+            return `<td class="${hc}" style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">${v ? fmtShort(v) : ''}</td>`;
+          }).join('')}
+          <td style="padding:8px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text)">${fmtShort(rowTotals[sm]||0)}</td>
+        </tr>`).join('')}
+        <tr style="background:var(--surface2)">
+          <td style="padding:10px 14px;font-weight:600;color:var(--text);border-top:2px solid var(--border)">Total</td>
+          ${collMonths.map(cm => `<td style="padding:10px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;border-top:2px solid var(--border);font-weight:600;color:var(--text)">${fmtShort(colTotals[cm]||0)}</td>`).join('')}
+          <td style="padding:10px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;border-top:2px solid var(--border);font-weight:700;color:var(--accent)">${fmtShort(grandTotal)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+async function init() {
+  const [outstanding, collection, cohort] = await Promise.all([
+    loadJSON('data/dealer_outstanding.json'),
+    loadJSON('data/daily_collection.json'),
+    loadJSON('data/cohort.json'),
+  ]);
+
+  document.getElementById('refreshMeta').textContent = 'Updated: ' + new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+
+  if (outstanding) {
+    outstandingData = outstanding;
+    outstandingFiltered = [...outstanding];
+    renderOutstanding();
+  } else {
+    document.getElementById('kpi-outstanding').innerHTML = '';
+    document.getElementById('tbody-outstanding').innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div></td></tr>';
+  }
+
+  if (collection) {
+    collectionData = collection;
+    collectionFiltered = [...collection];
+    renderCollection();
+  } else {
+    document.getElementById('kpi-collection').innerHTML = '';
+    document.getElementById('tbody-collection').innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div></td></tr>';
+  }
+
+  if (cohort) {
+    renderCohort(cohort);
+  } else {
+    document.getElementById('kpi-cohort').innerHTML = '';
+    document.getElementById('cohort-table-container').innerHTML = '<div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div>';
+  }
+}
+
+init();
+window.addEventListener('resize', () => { if (collectionData.length) renderCollectionChart(); });
+</script>
+</body>
+</html>
