@@ -6,754 +6,559 @@
 <title>Collection Report</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root {
-  --bg: #F4F7FB;
-  --surface: #FFFFFF;
-  --surface2: #EDF1F7;
-  --border: #D6DDE8;
-  --text: #0D1B2A;
-  --text2: #4A5568;
-  --text3: #8A9BB0;
-  --accent: #0D9488;
-  --accent-light: #CCFBF1;
-  --danger: #DC2626;
-  --warning: #D97706;
-  --good: #059669;
-  --nav-bg: #0D1B2A;
-  --nav-text: #94A3B8;
-  --nav-active: #14B8A6;
-  --shadow: 0 1px 3px rgba(13,27,42,0.08), 0 1px 2px rgba(13,27,42,0.04);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0A1628;
-    --surface: #0F2035;
-    --surface2: #152848;
-    --border: #1E3A5F;
-    --text: #EDF2F7;
-    --text2: #94A3B8;
-    --text3: #4A5568;
-    --accent: #14B8A6;
-    --accent-light: #134E4A;
-    --danger: #F87171;
-    --warning: #FBBf24;
-    --good: #34D399;
-    --nav-bg: #060E1A;
-    --nav-text: #64748B;
-    --nav-active: #14B8A6;
-    --shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0A1628;
-  --surface: #0F2035;
-  --surface2: #152848;
-  --border: #1E3A5F;
-  --text: #EDF2F7;
-  --text2: #94A3B8;
-  --text3: #4A5568;
-  --accent: #14B8A6;
-  --accent-light: #134E4A;
-  --danger: #F87171;
-  --warning: #FBBF24;
-  --good: #34D399;
-  --nav-bg: #060E1A;
-  --nav-text: #64748B;
-  --nav-active: #14B8A6;
-  --shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
+:root{--bg:#F0F3F8;--sf:#fff;--sf2:#F4F7FB;--bd:#D8E0EC;--tx:#0D1B2A;--tx2:#3D4F63;--tx3:#7A90A8;--ac:#0D9488;--acl:#E6FAF8;--d:#DC2626;--w:#D97706;--g:#059669;--nav:#0D1B2A;--sh:0 1px 4px rgba(13,27,42,.08)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1628;--sf:#0F2035;--sf2:#152848;--bd:#1E3A5F;--tx:#EDF2F7;--tx2:#94A3B8;--tx3:#4A5568;--ac:#14B8A6;--acl:#134E4A;--d:#F87171;--w:#FBBF24;--g:#34D399;--nav:#060E1A;--sh:0 1px 4px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--bg:#0A1628;--sf:#0F2035;--sf2:#152848;--bd:#1E3A5F;--tx:#EDF2F7;--tx2:#94A3B8;--tx3:#4A5568;--ac:#14B8A6;--acl:#134E4A;--d:#F87171;--w:#FBBF24;--g:#34D399;--nav:#060E1A;--sh:0 1px 4px rgba(0,0,0,.3)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px}body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; }
-body {
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+nav{background:var(--nav);display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{font-size:12px;font-weight:600;color:#fff;letter-spacing:.06em;text-transform:uppercase;padding:14px 0;margin-right:28px;white-space:nowrap}
+.brand span{color:#14B8A6}
+.ntab{padding:14px 18px;font-size:12px;font-weight:500;color:#64748B;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap;user-select:none}
+.ntab:hover{color:#CBD5E1}.ntab.active{color:#14B8A6;border-bottom-color:#14B8A6}
+.nmeta{font-size:11px;color:#4A5568;font-family:'IBM Plex Mono',monospace;margin-left:auto}
+main{padding:14px 18px;max-width:1800px;margin:0 auto}
+.sec{display:none}.sec.active{display:block}
 
-/* NAV */
-nav {
-  background: var(--nav-bg);
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.nav-brand {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 16px 0;
-  margin-right: 32px;
-  white-space: nowrap;
-}
-.nav-brand span { color: var(--nav-active); }
-.nav-tabs { display: flex; gap: 0; flex: 1; }
-.nav-tab {
-  padding: 16px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--nav-text);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-  user-select: none;
-}
-.nav-tab:hover { color: #CBD5E1; }
-.nav-tab.active { color: var(--nav-active); border-bottom-color: var(--nav-active); }
-.nav-meta {
-  font-size: 11px;
-  color: var(--nav-text);
-  font-family: 'IBM Plex Mono', monospace;
-  margin-left: auto;
-}
+/* STRIP */
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:14px;box-shadow:var(--sh)}
+.sc{background:var(--sf);padding:11px 14px}
+.sl{font-size:10px;font-weight:600;color:var(--tx3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;color:var(--tx)}
+.sv.d{color:var(--d)}.sv.w{color:var(--w)}.sv.g{color:var(--g)}
 
-/* MAIN */
-main { flex: 1; padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%; }
-
-/* SECTION */
-.section { display: none; }
-.section.active { display: block; }
-
-/* KPI ROW */
-.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.kpi {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow);
-}
-.kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
-.kpi-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
-.kpi-value.danger { color: var(--danger); }
-.kpi-value.warning { color: var(--warning); }
-.kpi-value.good { color: var(--good); }
-.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+/* FILTER BAR */
+.fb{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.fb label{font-size:11px;color:var(--tx3);font-weight:500}
+select.f,input.f{padding:5px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--sf);color:var(--tx);font-size:12px;font-family:inherit;outline:none}
+select.f:focus,input.f:focus{border-color:var(--ac)}
+.sb{padding:5px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--sf);color:var(--tx);font-size:12px;font-family:inherit;outline:none;min-width:160px}
+.sb::placeholder{color:var(--tx3)}.sb:focus{border-color:var(--ac)}
+.fsep{width:1px;height:20px;background:var(--bd);margin:0 4px}
+.pbtn{padding:4px 10px;border:1px solid var(--bd);border-radius:5px;background:var(--sf2);color:var(--tx2);cursor:pointer;font-size:12px;font-family:inherit}
+.pbtn:disabled{opacity:.4;cursor:default}.pbtn:not(:disabled):hover{border-color:var(--ac);color:var(--ac)}
 
 /* CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.card-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.card-actions { display: flex; gap: 8px; align-items: center; }
-
-/* SEARCH */
-.search-input {
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface2);
-  color: var(--text);
-  font-size: 12px;
-  font-family: inherit;
-  outline: none;
-  width: 200px;
-}
-.search-input:focus { border-color: var(--accent); }
-.search-input::placeholder { color: var(--text3); }
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:8px;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--bd);background:var(--sf2)}
+.ct{font-size:12px;font-weight:600;color:var(--tx)}
 
 /* TABLE */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-th {
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text3);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  background: var(--surface2);
-  cursor: pointer;
-  user-select: none;
-}
-th:hover { color: var(--text2); }
-th.sorted { color: var(--accent); }
-td {
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text2);
-  white-space: nowrap;
-}
-td.num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--text);
-}
-td.name { color: var(--text); font-weight: 500; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--surface2); }
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:7px 11px;text-align:left;font-size:10px;font-weight:600;color:var(--tx3);letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid var(--bd);white-space:nowrap;background:var(--sf2);cursor:pointer;user-select:none}
+th:hover{color:var(--tx2)}th.s{color:var(--ac)}
+th.r,td.r{text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+td{padding:6px 11px;border-bottom:1px solid var(--bd);color:var(--tx2);white-space:nowrap}
+td.nm{color:var(--tx);font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
+.chip{display:inline-block;padding:1px 7px;border-radius:99px;font-size:10px;font-weight:600}
+.cy{background:var(--acl);color:var(--ac)}.cn{background:var(--sf2);color:var(--tx3)}.crec{background:#FEF3C7;color:#92400E}
 
-/* AGING BARS */
-.aging-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; gap: 1px; min-width: 80px; }
-.aging-seg { height: 100%; }
+/* AGING BAR */
+.ab{display:flex;height:4px;border-radius:3px;overflow:hidden;gap:1px;min-width:70px}
+.ab div{height:100%}
 
-/* CHIP */
-.chip {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-.chip-sse { background: var(--accent-light); color: var(--accent); }
-.chip-recovery { background: #FEF3C7; color: #92400E; }
-.chip-no { background: var(--surface2); color: var(--text3); }
+/* PAG */
+.pag{display:flex;align-items:center;gap:8px;padding:9px 16px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx3)}
 
 /* CHART */
-.chart-container { padding: 20px; }
-canvas { display: block; }
+.chw{padding:14px 14px 6px}canvas{display:block}
+
+/* EMPTY/LOAD */
+.empty,.loading{text-align:center;padding:32px 20px;color:var(--tx3);font-size:12px}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* COHORT */
-.cohort-wrap { overflow-x: auto; }
-.cohort-table { font-size: 11.5px; }
-.cohort-table th { font-size: 10px; }
-.cohort-table td.num { font-size: 11px; }
-.cohort-table td.sale-month { font-weight: 600; color: var(--text); white-space: nowrap; }
-.heat-0 { background: transparent; }
-.heat-1 { background: rgba(20,184,166,0.08); }
-.heat-2 { background: rgba(20,184,166,0.16); }
-.heat-3 { background: rgba(20,184,166,0.28); }
-.heat-4 { background: rgba(20,184,166,0.42); }
-.heat-5 { background: rgba(20,184,166,0.58); color: var(--surface) !important; }
+.mxw{overflow-x:auto}
+.mx{font-size:11.5px;border-collapse:collapse;width:100%}
+.mx th{font-size:10px;padding:7px 9px;background:var(--sf2)}
+.mx th.r{text-align:right}
+.mx td{padding:5px 9px;border-bottom:1px solid var(--bd)}
+.mx td.sl{font-weight:600;color:var(--tx);white-space:nowrap;min-width:80px}
+.mx td.r{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;text-align:right}
+.mx tr.tot td{background:var(--sf2);font-weight:700;color:var(--tx);border-top:2px solid var(--bd)}
+.h1{background:rgba(20,184,166,.07)}.h2{background:rgba(20,184,166,.15)}.h3{background:rgba(20,184,166,.27)}.h4{background:rgba(20,184,166,.42)}.h5{background:rgba(20,184,166,.62);color:#fff!important}
 
-/* PAGINATION */
-.pagination { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text3); }
-.page-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  background: var(--surface2);
-  color: var(--text2);
-  cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
-}
-.page-btn:disabled { opacity: 0.4; cursor: default; }
-.page-btn:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:1000px){.g2,.g3{grid-template-columns:1fr}}
 
-/* EMPTY */
-.empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 13px; }
-.empty .icon { font-size: 32px; margin-bottom: 8px; }
-
-/* LOADING */
-.loading { text-align: center; padding: 48px; color: var(--text3); }
-.spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+/* SEARCHABLE SELECT WRAPPER */
+.sel-wrap{position:relative;display:inline-block}
+.sel-wrap .sdrop{position:absolute;top:100%;left:0;min-width:220px;max-height:240px;overflow-y:auto;background:var(--sf);border:1px solid var(--bd);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;display:none}
+.sel-wrap.open .sdrop{display:block}
+.sdrop .sopt{padding:6px 10px;font-size:12px;cursor:pointer;color:var(--tx2)}
+.sdrop .sopt:hover,.sdrop .sopt.sel{background:var(--acl);color:var(--ac)}
+.sdrop .sopt.sel{font-weight:600}
 </style>
 </head>
 <body>
-
 <nav>
-  <div class="nav-brand">EMotorad <span>·</span> Collection</div>
-  <div class="nav-tabs">
-    <div class="nav-tab active" data-tab="outstanding">Dealer Outstanding</div>
-    <div class="nav-tab" data-tab="collection">Daily Collection</div>
-    <div class="nav-tab" data-tab="cohort">Sales vs Collection</div>
-  </div>
-  <div class="nav-meta" id="refreshMeta">—</div>
+  <div class="brand">EMotorad <span>·</span> Collection</div>
+  <div class="ntab active" data-tab="outstanding">Dealer Outstanding</div>
+  <div class="ntab" data-tab="collection">Daily Collection</div>
+  <div class="ntab" data-tab="cohort">FG – Sales vs Collection</div>
+  <div class="nmeta" id="nmeta">—</div>
 </nav>
-
 <main>
 
-  <!-- DEALER OUTSTANDING -->
-  <div class="section active" id="tab-outstanding">
-    <div class="kpi-row" id="kpi-outstanding">
-      <div class="loading"><div class="spinner"></div><br>Loading…</div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Dealer Aging Summary</span>
-        <div class="card-actions">
-          <input class="search-input" id="search-outstanding" placeholder="Search dealer…" autocomplete="off">
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table id="table-outstanding">
-          <thead>
-            <tr>
-              <th data-col="customer_name">Dealer</th>
-              <th data-col="territory">Territory</th>
-              <th data-col="0_30" class="num">0–30</th>
-              <th data-col="31_60" class="num">31–60</th>
-              <th data-col="61_90" class="num">61–90</th>
-              <th data-col="91_120" class="num">91–120</th>
-              <th data-col="121_150" class="num">121–150</th>
-              <th data-col="151_above" class="num">151+</th>
-              <th data-col="total_outstanding" class="num sorted">Total Outstanding</th>
-              <th>Aging</th>
-              <th>SSE</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-outstanding">
-            <tr><td colspan="11"><div class="loading"><div class="spinner"></div><br>Loading data…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="page-outstanding"></div>
+<!-- ══ TAB 1 ══ -->
+<div class="sec active" id="tab-outstanding">
+  <div class="strip">
+    <div class="sc"><div class="sl">Total Outstanding</div><div class="sv" id="s0">—</div></div>
+    <div class="sc"><div class="sl">Outstanding &lt;60 Days</div><div class="sv" id="s1">—</div></div>
+    <div class="sc"><div class="sl">Outstanding 60–90 Days</div><div class="sv w" id="s2">—</div></div>
+    <div class="sc"><div class="sl">Outstanding 90+ Days</div><div class="sv d" id="s3">—</div></div>
+    <div class="sc"><div class="sl">% Outstanding &lt;60</div><div class="sv" id="s4">—</div></div>
+    <div class="sc"><div class="sl">% Outstanding 60–90</div><div class="sv w" id="s5">—</div></div>
+    <div class="sc"><div class="sl">% Outstanding 90+</div><div class="sv d" id="s6">—</div></div>
+  </div>
+  <div class="fb">
+    <label>Dealer Region</label>
+    <select class="f" id="fo-reg"><option value="">All</option></select>
+    <label>SSE Eligible</label>
+    <select class="f" id="fo-sse"><option value="">All</option><option>Yes</option><option>No</option></select>
+    <label>Is Recovery Dealer</label>
+    <select class="f" id="fo-rec"><option value="">All</option><option>Yes</option><option>No</option></select>
+    <div class="fsep"></div>
+    <label>Dealer Name</label>
+    <div class="sel-wrap" id="o-dsel-wrap">
+      <input class="sb" id="o-dsel-inp" placeholder="Search dealer…" autocomplete="off">
+      <div class="sdrop" id="o-dsel-drop"></div>
     </div>
   </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Dealer Aging Summary</span><span style="font-size:11px;color:var(--tx3)" id="ocnt"></span></div>
+    <div class="tw">
+      <table id="otbl">
+        <thead><tr>
+          <th data-c="customer_name">Customer Name</th>
+          <th data-c="territory">Dealer Region</th>
+          <th data-c="is_sse_eligible">SSE Eligible</th>
+          <th data-c="total_outstanding" class="r s">Total Outstanding</th>
+          <th data-c="lt60" class="r">Outstanding &lt;60</th>
+          <th data-c="b6090" class="r">60–90 Days</th>
+          <th data-c="gt90" class="r">90+ Days</th>
+          <th data-c="plt60" class="r">% &lt;60</th>
+          <th data-c="p6090" class="r">% 60–90</th>
+          <th data-c="pgt90" class="r">% 90+</th>
+          <th data-c="primary_sales_90d" class="r">Primary Sales (90d)</th>
+          <th data-c="secondary_units_90d" class="r">Secondary Units (90d)</th>
+          <th data-c="sec_primary_ratio" class="r">Sec/Primary</th>
+          <th data-c="dealer_remarks">Dealer Remarks</th>
+          <th>Aging</th>
+          <th data-c="Is Recovery Dealer">Recovery</th>
+        </tr></thead>
+        <tbody id="otbody"><tr><td colspan="16"><div class="loading"><div class="spin"></div><br>Loading…</div></td></tr></tbody>
+      </table>
+    </div>
+    <div class="pag" id="opag"></div>
+  </div>
+</div>
 
-  <!-- DAILY COLLECTION -->
-  <div class="section" id="tab-collection">
-    <div class="kpi-row" id="kpi-collection">
-      <div class="loading"><div class="spinner"></div><br>Loading…</div>
+<!-- ══ TAB 2 ══ -->
+<div class="sec" id="tab-collection">
+  <div class="fb">
+    <label>Dealer Region</label>
+    <select class="f" id="fc-reg"><option value="">All</option></select>
+    <label>Dealer Name</label>
+    <div class="sel-wrap" id="c-dsel-wrap">
+      <input class="sb" id="c-dsel-inp" placeholder="Search dealer…" autocomplete="off">
+      <div class="sdrop" id="c-dsel-drop"></div>
+    </div>
+    <div class="fsep"></div>
+    <label>From</label><input type="date" class="f" id="fc-from">
+    <label>To</label><input type="date" class="f" id="fc-to">
+    <button class="pbtn" id="fc-rst">Reset</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">M-O-M Collection (by Region)</span></div>
+      <div class="tw"><table id="mom-tbl"></table></div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Daily Collection — Last 90 Days</span>
-      </div>
-      <div class="chart-container">
-        <canvas id="chart-collection" height="260"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Collection Entries</span>
-        <div class="card-actions">
-          <input class="search-input" id="search-collection" placeholder="Search dealer…" autocomplete="off">
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table id="table-collection">
-          <thead>
-            <tr>
-              <th data-col="posting_date">Date</th>
-              <th data-col="party_name">Dealer</th>
-              <th data-col="Dealer Region">Region</th>
-              <th data-col="payment_type">Type</th>
-              <th data-col="paid_amount" class="num sorted">Amount</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-collection">
-            <tr><td colspan="5"><div class="loading"><div class="spinner"></div><br>Loading data…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="page-collection"></div>
+      <div class="ch"><span class="ct">Daily Collection — Last 30 Days</span></div>
+      <div class="chw"><canvas id="cchart" height="220"></canvas></div>
     </div>
   </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Dealer Wise M-O-M Collection</span><input class="sb" style="width:160px" id="fc-mom-q" placeholder="Search dealer…"></div>
+      <div class="tw"><table id="dmom-tbl"></table></div>
+      <div class="pag" id="dpag"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Dealer Wise — Last 30 Days</span></div>
+      <div class="tw"><table id="d30-tbl"></table></div>
+      <div class="pag" id="d30pag"></div>
+    </div>
+  </div>
+</div>
 
-  <!-- COHORT -->
-  <div class="section" id="tab-cohort">
-    <div class="kpi-row" id="kpi-cohort">
-      <div class="loading"><div class="spinner"></div><br>Loading…</div>
+<!-- ══ TAB 3 ══ -->
+<div class="sec" id="tab-cohort">
+  <div class="fb">
+    <label>Sale Month</label>
+    <select class="f" id="fco-m" style="min-width:140px">
+      <option value="">All</option>
+    </select>
+    <label>Dealer Name</label>
+    <div class="sel-wrap" id="co-dsel-wrap">
+      <input class="sb" id="co-dsel-inp" placeholder="Search dealer…" autocomplete="off">
+      <div class="sdrop" id="co-dsel-drop"></div>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Sales vs Collection Cohort</span>
-        <div class="card-actions">
-          <span style="font-size:11px;color:var(--text3)">Values = ₹ (invoice base)</span>
-        </div>
-      </div>
-      <div class="cohort-wrap">
-        <div id="cohort-table-container"><div class="loading"><div class="spinner"></div><br>Loading…</div></div>
-      </div>
-    </div>
+    <button class="pbtn" id="fco-rst">Reset</button>
   </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Sales vs Collection — Amount (₹)</span><span style="font-size:11px;color:var(--tx3)">FG invoices only · invoice base</span></div>
+    <div class="mxw" id="mxa"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Sales vs Collection — % of Sale Month</span></div>
+    <div class="mxw" id="mxp"></div>
+  </div>
+</div>
 
 </main>
-
 <script>
-const fmt = n => n == null ? '—' : '₹' + Math.round(n).toLocaleString('en-IN');
-const fmtShort = n => {
-  if (n == null) return '—';
-  const a = Math.abs(n);
-  if (a >= 1e7) return '₹' + (n/1e7).toFixed(2) + ' Cr';
-  if (a >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' L';
-  return '₹' + Math.round(n).toLocaleString('en-IN');
-};
+// ── utils ────────────────────────────────────────────────
+const fC=n=>{if(!n&&n!==0)return'';const a=Math.abs(n);if(a>=1e7)return'₹'+(n/1e7).toFixed(2)+' Cr';if(a>=1e5)return'₹'+(n/1e5).toFixed(2)+' L';return'₹'+Math.round(n).toLocaleString('en-IN');};
+const fP2=n=>n==null?'':((n*100)).toFixed(2)+'%';
+const fP1=n=>n==null||isNaN(n)?'':((n*100)).toFixed(1)+'%';
+const fN=n=>n==null?'—':Math.round(n).toLocaleString('en-IN');
 
-// Tab switching
-document.querySelectorAll('.nav-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-  });
-});
+// ── nav ──────────────────────────────────────────────────
+document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.ntab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+  if(t.dataset.tab==='collection')renderColl();
+  if(t.dataset.tab==='cohort')renderCohort();
+}));
 
-// Load JSON
-async function loadJSON(path) {
-  try {
-    const r = await fetch(path);
-    if (!r.ok) throw new Error(r.status);
-    return await r.json();
-  } catch(e) {
-    return null;
+async function jf(p){try{const r=await fetch(p);return r.ok?r.json():null;}catch{return null;}}
+
+// ── searchable dropdown helper ────────────────────────────
+function makeSearchDrop(wrapId, inpId, dropId, getItems, onSelect) {
+  const wrap=document.getElementById(wrapId);
+  const inp=document.getElementById(inpId);
+  const drop=document.getElementById(dropId);
+  let selVal='', items=[];
+
+  function refresh(q=''){
+    drop.innerHTML='';
+    const filtered=q?items.filter(x=>x.label.toLowerCase().includes(q.toLowerCase())):items;
+    // All option
+    const all=document.createElement('div');
+    all.className='sopt'+(selVal===''?' sel':'');
+    all.textContent='All'; all.dataset.v='';
+    all.onmousedown=e=>{e.preventDefault();choose('','All');};
+    drop.appendChild(all);
+    filtered.slice(0,100).forEach(x=>{
+      const d=document.createElement('div');
+      d.className='sopt'+(selVal===x.value?' sel':'');
+      d.textContent=x.label; d.dataset.v=x.value;
+      d.onmousedown=e=>{e.preventDefault();choose(x.value,x.label);};
+      drop.appendChild(d);
+    });
   }
+
+  function choose(val,label){
+    selVal=val; inp.value=val?label:''; wrap.classList.remove('open');
+    onSelect(val);
+  }
+
+  inp.addEventListener('focus',()=>{items=getItems();refresh(inp.value==='All'?'':inp.value);wrap.classList.add('open');});
+  inp.addEventListener('input',()=>{if(inp.value==='')selVal='';refresh(inp.value);wrap.classList.add('open');if(inp.value==='')onSelect('');});
+  inp.addEventListener('blur',()=>{setTimeout(()=>wrap.classList.remove('open'),150);});
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target))wrap.classList.remove('open');});
+
+  return {reset:()=>{selVal='';inp.value='';},getVal:()=>selVal};
 }
 
-// ─── OUTSTANDING ──────────────────────────────────────────────
-let outstandingData = [], outstandingFiltered = [], outstandingSort = {col:'total_outstanding', asc:false};
-let outPage = 1; const outPageSize = 50;
+// ════════════════════════════════════════════════════════
+// TAB 1 – DEALER OUTSTANDING
+// ════════════════════════════════════════════════════════
+let oAll=[],oFilt=[],oSort={c:'total_outstanding',asc:false},oPage=1,oDS=null;
+const oPS=50;
 
-function renderOutstanding() {
-  const kpi = document.getElementById('kpi-outstanding');
-  const total = outstandingData.reduce((s,r) => s + (r.total_outstanding||0), 0);
-  const over90 = outstandingData.reduce((s,r) => s + (r['91_120']||0) + (r['121_150']||0) + (r['151_above']||0), 0);
-  const dealers = outstandingData.length;
-  const pending = outstandingData.filter(r => (r['91_120']||0)+(r['121_150']||0)+(r['151_above']||0) > 0).length;
-  kpi.innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total Outstanding</div><div class="kpi-value">${fmtShort(total)}</div></div>
-    <div class="kpi"><div class="kpi-label">Overdue 90+ Days</div><div class="kpi-value danger">${fmtShort(over90)}</div><div class="kpi-sub">${((over90/total)*100).toFixed(1)}% of total</div></div>
-    <div class="kpi"><div class="kpi-label">Dealers</div><div class="kpi-value">${dealers}</div></div>
-    <div class="kpi"><div class="kpi-label">Dealers with 90+ Due</div><div class="kpi-value warning">${pending}</div></div>
-  `;
-  renderOutstandingTable();
+async function initOut(){
+  const d=await jf('data/dealer_outstanding.json');if(!d)return;
+  oAll=d.map(r=>({...r,
+    lt60:(r['0-30']||r['0_30']||0)+(r['31-60']||r['31_60']||0),
+    b6090:r['61-90']||r['61_90']||0,
+    gt90:(r['91-120']||r['91_120']||0)+(r['121-150']||r['121_150']||0)+(r['151-Above']||r['151_above']||0),
+    plt60:0,p6090:0,pgt90:0,
+  })).map(r=>({...r,
+    plt60:r.total_outstanding?(r.lt60/r.total_outstanding):0,
+    p6090:r.total_outstanding?(r.b6090/r.total_outstanding):0,
+    pgt90:r.total_outstanding?(r.gt90/r.total_outstanding):0,
+  }));
+
+  // Region filter
+  const regs=[...new Set(oAll.map(r=>r.territory).filter(Boolean))].sort();
+  const rf=document.getElementById('fo-reg');
+  regs.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rf.appendChild(o);});
+
+  // Dealer searchable dropdown — sorted by total outstanding desc
+  oDS=makeSearchDrop('o-dsel-wrap','o-dsel-inp','o-dsel-drop',
+    ()=>[...oAll].sort((a,b)=>(b.total_outstanding||0)-(a.total_outstanding||0)).map(r=>({value:r.customer_name||'',label:r.customer_name||''})),
+    ()=>{oPage=1;applyOut();}
+  );
+
+  document.getElementById('nmeta').textContent='Updated: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  applyOut();
+  // auto-render if tab already active
+  if(document.getElementById('tab-outstanding').classList.contains('active'))applyOut();
 }
 
-function sortOutstanding(data) {
-  const {col, asc} = outstandingSort;
-  return [...data].sort((a,b) => {
-    const av = a[col]||0, bv = b[col]||0;
-    if (typeof av === 'string') return asc ? av.localeCompare(bv) : bv.localeCompare(av);
-    return asc ? av-bv : bv-av;
+function applyOut(){
+  const reg=document.getElementById('fo-reg').value;
+  const sse=document.getElementById('fo-sse').value;
+  const rec=document.getElementById('fo-rec').value;
+  const dealer=oDS?oDS.getVal():'';
+  oFilt=oAll.filter(r=>(!reg||r.territory===reg)&&(!sse||r.is_sse_eligible===sse)&&(!rec||r['Is Recovery Dealer']===rec)&&(!dealer||r.customer_name===dealer));
+  oPage=1;renderOut();
+}
+['fo-reg','fo-sse','fo-rec'].forEach(id=>document.getElementById(id).addEventListener('change',applyOut));
+
+function renderOut(){
+  const tot=oFilt.reduce((s,r)=>s+(r.total_outstanding||0),0);
+  const lt60=oFilt.reduce((s,r)=>s+(r.lt60||0),0);
+  const b6090=oFilt.reduce((s,r)=>s+(r.b6090||0),0);
+  const gt90=oFilt.reduce((s,r)=>s+(r.gt90||0),0);
+  document.getElementById('s0').textContent=fC(tot)||'₹0';
+  document.getElementById('s1').textContent=fC(lt60)||'₹0';
+  document.getElementById('s2').textContent=fC(b6090)||'₹0';
+  document.getElementById('s3').textContent=fC(gt90)||'₹0';
+  document.getElementById('s4').textContent=tot?fP1(lt60/tot):'—';
+  document.getElementById('s5').textContent=tot?fP1(b6090/tot):'—';
+  document.getElementById('s6').textContent=tot?fP1(gt90/tot):'—';
+
+  const sorted=[...oFilt].sort((a,b)=>{
+    const {c,asc}=oSort,av=a[c]||0,bv=b[c]||0;
+    return typeof av==='string'?(asc?av.localeCompare(bv):bv.localeCompare(av)):(asc?av-bv:bv-av);
   });
-}
-
-function renderOutstandingTable() {
-  const sorted = sortOutstanding(outstandingFiltered);
-  const total = sorted.length;
-  const pages = Math.ceil(total/outPageSize) || 1;
-  outPage = Math.min(outPage, pages);
-  const slice = sorted.slice((outPage-1)*outPageSize, outPage*outPageSize);
-  const tbody = document.getElementById('tbody-outstanding');
-  if (!slice.length) { tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">📭</div>No dealers found</div></td></tr>'; return; }
-  tbody.innerHTML = slice.map(r => {
-    const tot = r.total_outstanding||0;
-    const segs = [
-      {v: r['0_30']||0, c:'#34D399'},
-      {v: r['31_60']||0, c:'#6EE7B7'},
-      {v: r['61_90']||0, c:'#FBBf24'},
-      {v: r['91_120']||0, c:'#F97316'},
-      {v: r['121_150']||0, c:'#EF4444'},
-      {v: r['151_above']||0, c:'#991B1B'},
-    ];
-    const bar = segs.map(s => tot > 0 ? `<div class="aging-seg" style="flex:${s.v/tot};background:${s.c}"></div>` : '').join('');
-    const sseChip = r['is_sse_eligible'] === 'Yes' ? '<span class="chip chip-sse">SSE</span>' : '';
-    const recChip = r['Is Recovery Dealer'] === 'Yes' ? '<span class="chip chip-recovery">Recovery</span>' : '';
+  const pages=Math.ceil(sorted.length/oPS)||1;oPage=Math.min(oPage,pages);
+  const sl=sorted.slice((oPage-1)*oPS,oPage*oPS);
+  document.getElementById('ocnt').textContent=oFilt.length+' dealers';
+  const tb=document.getElementById('otbody');
+  if(!sl.length){tb.innerHTML='<tr><td colspan="16"><div class="empty">No dealers match filters</div></td></tr>';return;}
+  tb.innerHTML=sl.map(r=>{
+    const t2=r.total_outstanding||0;
+    const segs=[{v:r['0-30']||r['0_30']||0,c:'#34D399'},{v:r['31-60']||r['31_60']||0,c:'#6EE7B7'},{v:r['61-90']||r['61_90']||0,c:'#FBBf24'},{v:r['91-120']||r['91_120']||0,c:'#F97316'},{v:r['121-150']||r['121_150']||0,c:'#EF4444'},{v:r['151-Above']||r['151_above']||0,c:'#991B1B'}];
+    const bar=t2>0?segs.map(s=>`<div style="flex:${s.v/t2};background:${s.c}"></div>`).join(''):'';
+    const p90=r.pgt90>0;const p60=r.p6090>0;
+    const ratio=r.sec_primary_ratio!=null?r.sec_primary_ratio.toFixed(2):'—';
+    const rem=r.dealer_remarks||r['Dealer Remarks']||'';
     return `<tr>
-      <td class="name" title="${r.customer_name||''}">${r.customer_name||'—'}</td>
+      <td class="nm" title="${r.customer_name||''}">${r.customer_name||'—'}</td>
       <td>${r.territory||'—'}</td>
-      <td class="num">${fmt(r['0_30'])}</td>
-      <td class="num">${fmt(r['31_60'])}</td>
-      <td class="num" style="${(r['61_90']||0)>0?'color:var(--warning)':''}">${fmt(r['61_90'])}</td>
-      <td class="num" style="${(r['91_120']||0)>0?'color:var(--danger)':''}">${fmt(r['91_120'])}</td>
-      <td class="num" style="${(r['121_150']||0)>0?'color:var(--danger)':''}">${fmt(r['121_150'])}</td>
-      <td class="num" style="${(r['151_above']||0)>0?'color:var(--danger)':''}">${fmt(r['151_above'])}</td>
-      <td class="num" style="font-weight:600">${fmt(tot)}</td>
-      <td><div class="aging-bar">${bar}</div></td>
-      <td>${sseChip}${recChip}</td>
+      <td><span class="chip ${r.is_sse_eligible==='Yes'?'cy':'cn'}">${r.is_sse_eligible||'No'}</span></td>
+      <td class="r" style="font-weight:600">${fC(t2)||'—'}</td>
+      <td class="r">${fC(r.lt60)||'—'}</td>
+      <td class="r" style="${p60?'color:var(--w)':''}">${fC(r.b6090)||'—'}</td>
+      <td class="r" style="${p90?'color:var(--d)':''}">${fC(r.gt90)||'—'}</td>
+      <td class="r">${fP1(r.plt60)}</td>
+      <td class="r" style="${p60?'color:var(--w)':''}">${fP1(r.p6090)}</td>
+      <td class="r" style="${p90?'color:var(--d)':''}">${fP1(r.pgt90)}</td>
+      <td class="r">${r.primary_sales_90d!=null?fN(r.primary_sales_90d):'—'}</td>
+      <td class="r">${r.secondary_units_90d!=null?fN(r.secondary_units_90d):'—'}</td>
+      <td class="r">${ratio}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${rem}">${rem||'—'}</td>
+      <td><div class="ab">${bar}</div></td>
+      <td>${r['Is Recovery Dealer']==='Yes'?'<span class="chip crec">Yes</span>':''}</td>
     </tr>`;
   }).join('');
-  // Pagination
-  const pag = document.getElementById('page-outstanding');
-  pag.innerHTML = `
-    <button class="page-btn" id="out-prev" ${outPage===1?'disabled':''}>← Prev</button>
-    <span>Page ${outPage} of ${pages} &nbsp;·&nbsp; ${total} dealers</span>
-    <button class="page-btn" id="out-next" ${outPage>=pages?'disabled':''}>Next →</button>
-  `;
-  document.getElementById('out-prev').onclick = () => { outPage--; renderOutstandingTable(); };
-  document.getElementById('out-next').onclick = () => { outPage++; renderOutstandingTable(); };
+  const pag=document.getElementById('opag');
+  pag.innerHTML=`<button class="pbtn" id="op-p" ${oPage===1?'disabled':''}>← Prev</button><span>Page ${oPage} of ${pages} · ${oFilt.length} dealers</span><button class="pbtn" id="op-n" ${oPage>=pages?'disabled':''}>Next →</button>`;
+  document.getElementById('op-p').onclick=()=>{oPage--;renderOut();};
+  document.getElementById('op-n').onclick=()=>{oPage++;renderOut();};
+}
+document.querySelectorAll('#otbl th[data-c]').forEach(th=>th.addEventListener('click',()=>{
+  const c=th.dataset.c;oSort={c,asc:oSort.c===c?!oSort.asc:false};
+  document.querySelectorAll('#otbl th').forEach(t=>t.classList.remove('s'));th.classList.add('s');oPage=1;renderOut();
+}));
+
+// ════════════════════════════════════════════════════════
+// TAB 2 – DAILY COLLECTION
+// ════════════════════════════════════════════════════════
+let cAll=[],cFilt=[],cDS=null,dmomQ='',dmomP=1,d30P=1;
+const dPS=30;
+
+async function initColl(){
+  const d=await jf('data/daily_collection.json');if(!d)return;
+  cAll=d;
+  const dates=cAll.map(r=>r.posting_date).filter(Boolean).sort();
+  if(dates.length){
+    document.getElementById('fc-from').value=dates[0].slice(0,10);
+    document.getElementById('fc-to').value=dates[dates.length-1].slice(0,10);
+  }
+  const regs=[...new Set(cAll.map(r=>r['Dealer Region']).filter(Boolean))].sort();
+  const rf=document.getElementById('fc-reg');
+  regs.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rf.appendChild(o);});
+
+  // Dealer searchable — sorted by total paid desc
+  const dealerTot={};
+  cAll.forEach(r=>{const d=r.party_name||'';dealerTot[d]=(dealerTot[d]||0)+(r.paid_amount||0);});
+  const dealersSorted=Object.entries(dealerTot).sort((a,b)=>b[1]-a[1]).map(([k])=>k).filter(Boolean);
+  cDS=makeSearchDrop('c-dsel-wrap','c-dsel-inp','c-dsel-drop',
+    ()=>dealersSorted.map(v=>({value:v,label:v})),
+    ()=>{dmomP=1;d30P=1;renderColl();}
+  );
+  renderColl(); // auto-render once data + cDS ready
 }
 
-document.getElementById('search-outstanding').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  outstandingFiltered = q ? outstandingData.filter(r => (r.customer_name||'').toLowerCase().includes(q) || (r.territory||'').toLowerCase().includes(q)) : [...outstandingData];
-  outPage = 1;
-  renderOutstandingTable();
-});
+function renderColl(){
+  if(!cAll.length)return;
+  const reg=document.getElementById('fc-reg').value;
+  const dealer=cDS?cDS.getVal():'';
+  const from=document.getElementById('fc-from').value;
+  const to=document.getElementById('fc-to').value;
+  cFilt=cAll.filter(r=>(!reg||r['Dealer Region']===reg)&&(!dealer||r.party_name===dealer)&&(!from||(r.posting_date||'').slice(0,10)>=from)&&(!to||(r.posting_date||'').slice(0,10)<=to));
 
-document.querySelectorAll('#table-outstanding th[data-col]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.col;
-    if (outstandingSort.col === col) outstandingSort.asc = !outstandingSort.asc;
-    else { outstandingSort.col = col; outstandingSort.asc = false; }
-    document.querySelectorAll('#table-outstanding th').forEach(t => t.classList.remove('sorted'));
-    th.classList.add('sorted');
-    outPage = 1;
-    renderOutstandingTable();
-  });
-});
+  // MOM by region
+  const mSet=new Set();cFilt.forEach(r=>{const m=(r.posting_date||'').slice(0,7);if(m)mSet.add(m);});
+  const months=[...mSet].sort();
+  const mLbls=months.map(m=>{const[y,mo]=m.split('-');return new Date(+y,+mo-1).toLocaleString('en-IN',{month:'short',year:'numeric'});});
+  const regs=[...new Set(cFilt.map(r=>r['Dealer Region']).filter(Boolean))].sort();
+  const mom={},mTot={};
+  cFilt.forEach(r=>{const rg=r['Dealer Region']||'Other',m=(r.posting_date||'').slice(0,7),v=r.paid_amount||0;if(!mom[rg])mom[rg]={};mom[rg][m]=(mom[rg][m]||0)+v;mTot[m]=(mTot[m]||0)+v;});
+  const grand=Object.values(mTot).reduce((s,v)=>s+v,0);
+  document.getElementById('mom-tbl').innerHTML=`<thead><tr><th>Dealer Region</th>${mLbls.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Total</th></tr></thead>
+  <tbody>${regs.map(rg=>{const rt=months.reduce((s,m)=>s+(mom[rg]?.[m]||0),0);return`<tr><td style="font-weight:600">${rg}</td>${months.map(m=>`<td class="r">${fC(mom[rg]?.[m])||''}</td>`).join('')}<td class="r" style="font-weight:600">${fC(rt)}</td></tr>`;}).join('')}
+  <tr style="background:var(--sf2);font-weight:700;border-top:2px solid var(--bd)"><td>Total</td>${months.map(m=>`<td class="r">${fC(mTot[m])}</td>`).join('')}<td class="r">${fC(grand)}</td></tr></tbody>`;
 
-// ─── DAILY COLLECTION ─────────────────────────────────────────
-let collectionData = [], collectionFiltered = [], collSort = {col:'posting_date', asc:false};
-let collPage = 1; const collPageSize = 50;
-
-function renderCollection() {
-  const kpi = document.getElementById('kpi-collection');
-  const total = collectionData.reduce((s,r) => s+(r.paid_amount||0),0);
-  const days30 = collectionData.filter(r => new Date(r.posting_date) >= new Date(Date.now()-30*864e5));
-  const total30 = days30.reduce((s,r) => s+(r.paid_amount||0),0);
-  const entries = collectionData.length;
-  kpi.innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total Collected (90d)</div><div class="kpi-value good">${fmtShort(total)}</div></div>
-    <div class="kpi"><div class="kpi-label">Last 30 Days</div><div class="kpi-value">${fmtShort(total30)}</div></div>
-    <div class="kpi"><div class="kpi-label">Transactions (90d)</div><div class="kpi-value">${entries}</div></div>
-    <div class="kpi"><div class="kpi-label">Avg per Day</div><div class="kpi-value">${fmtShort(total/90)}</div></div>
-  `;
-  renderCollectionChart();
-  renderCollectionTable();
-}
-
-function renderCollectionChart() {
-  // Group by date
-  const byDate = {};
-  collectionData.forEach(r => {
-    const d = (r.posting_date||'').slice(0,10);
-    if (d) byDate[d] = (byDate[d]||0) + (r.paid_amount||0);
-  });
-  const dates = Object.keys(byDate).sort();
-  const values = dates.map(d => byDate[d]);
-  const canvas = document.getElementById('chart-collection');
-  const container = canvas.parentElement;
-  const W = container.clientWidth - 40;
-  const H = 260;
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-
-  if (!dates.length) return;
-
-  const pad = {top:20, right:20, bottom:50, left:80};
-  const cW = W - pad.left - pad.right;
-  const cH = H - pad.top - pad.bottom;
-  const maxV = Math.max(...values) * 1.1 || 1;
-  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#14B8A6';
-  const text3 = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#8A9BB0';
-  const border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#D6DDE8';
-
-  // Grid lines
-  ctx.strokeStyle = border;
-  ctx.lineWidth = 1;
-  for (let i=0; i<=4; i++) {
-    const y = pad.top + (cH/4)*i;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+cW, y); ctx.stroke();
-    ctx.fillStyle = text3;
-    ctx.font = '10px IBM Plex Mono, monospace';
-    ctx.textAlign = 'right';
-    const val = maxV*(1-i/4);
-    ctx.fillText(fmtShort(val), pad.left-6, y+4);
+  // Last 30 days bar chart
+  const cut30=new Date(Date.now()-30*864e5);
+  const byDate={};
+  cFilt.filter(r=>new Date(r.posting_date)>=cut30).forEach(r=>{const d=(r.posting_date||'').slice(0,10);if(d)byDate[d]=(byDate[d]||0)+(r.paid_amount||0);});
+  const dates30=Object.keys(byDate).sort(),vals30=dates30.map(d=>byDate[d]);
+  const canvas=document.getElementById('cchart');
+  const W=canvas.parentElement.clientWidth-28,H=220;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,W,H);
+  if(dates30.length){
+    const pad={t:16,r:12,b:38,l:68},cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+    const maxV=Math.max(...vals30)*1.1||1;
+    const ac=getComputedStyle(document.documentElement).getPropertyValue('--ac').trim()||'#14B8A6';
+    const t3=getComputedStyle(document.documentElement).getPropertyValue('--tx3').trim()||'#8A9BB0';
+    const bd=getComputedStyle(document.documentElement).getPropertyValue('--bd').trim()||'#D8E0EC';
+    ctx.strokeStyle=bd;ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad.t+(cH/4)*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke();ctx.fillStyle=t3;ctx.font='9px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText(fC(maxV*(1-i/4)),pad.l-3,y+3);}
+    const bW=Math.max(4,Math.min(18,cW/dates30.length-2)),step=cW/dates30.length;
+    dates30.forEach((d,i)=>{const x=pad.l+i*step+step/2,h=(vals30[i]/maxV)*cH,y=pad.t+cH-h;ctx.fillStyle=ac;ctx.globalAlpha=.88;ctx.fillRect(x-bW/2,y,bW,h);ctx.globalAlpha=1;});
+    ctx.fillStyle=t3;ctx.font='9px IBM Plex Sans,sans-serif';ctx.textAlign='center';
+    dates30.forEach((d,i)=>{if(i%5!==0)return;ctx.fillText(d.slice(5),pad.l+i*step+step/2,pad.t+cH+16);});
   }
 
-  // Bars
-  const barW = Math.max(2, Math.min(16, cW/dates.length - 2));
-  const step = cW/dates.length;
-  dates.forEach((d, i) => {
-    const x = pad.left + i*step + step/2;
-    const h = (values[i]/maxV)*cH;
-    const y = pad.top + cH - h;
-    ctx.fillStyle = accent;
-    ctx.globalAlpha = 0.85;
-    ctx.fillRect(x - barW/2, y, barW, h);
-    ctx.globalAlpha = 1;
-  });
+  // Dealer MOM
+  const dmMap={};
+  cFilt.forEach(r=>{const d=r.party_name||'?',m=(r.posting_date||'').slice(0,7),v=r.paid_amount||0;if(!dmMap[d])dmMap[d]={reg:r['Dealer Region']||'',m:{}};dmMap[d].m[m]=(dmMap[d].m[m]||0)+v;});
+  let dmRows=Object.entries(dmMap).map(([n,v])=>({n,reg:v.reg,tot:months.reduce((s,m)=>s+(v.m[m]||0),0),m:v.m})).sort((a,b)=>b.tot-a.tot);
+  if(dmomQ)dmRows=dmRows.filter(r=>r.n.toLowerCase().includes(dmomQ));
+  const dpages=Math.ceil(dmRows.length/dPS)||1;dmomP=Math.min(dmomP,dpages);
+  const dsl=dmRows.slice((dmomP-1)*dPS,dmomP*dPS);
+  document.getElementById('dmom-tbl').innerHTML=`<thead><tr><th>Dealer</th>${mLbls.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Total</th></tr></thead>
+  <tbody>${dsl.map(d=>`<tr><td class="nm" title="${d.n}">${d.n}</td>${months.map(m=>`<td class="r">${fC(d.m[m])||''}</td>`).join('')}<td class="r" style="font-weight:600">${fC(d.tot)}</td></tr>`).join('')}</tbody>`;
+  const dpag=document.getElementById('dpag');
+  dpag.innerHTML=`<button class="pbtn" id="dm-p" ${dmomP===1?'disabled':''}>← Prev</button><span>Page ${dmomP}/${dpages} · ${dmRows.length} dealers</span><button class="pbtn" id="dm-n" ${dmomP>=dpages?'disabled':''}>Next →</button>`;
+  document.getElementById('dm-p').onclick=()=>{dmomP--;renderColl();};
+  document.getElementById('dm-n').onclick=()=>{dmomP++;renderColl();};
 
-  // X labels (every 7th)
-  ctx.fillStyle = text3;
-  ctx.font = '10px IBM Plex Sans, sans-serif';
-  ctx.textAlign = 'center';
-  dates.forEach((d, i) => {
-    if (i % 7 !== 0) return;
-    const x = pad.left + i*step + step/2;
-    const label = d.slice(5); // MM-DD
-    ctx.fillText(label, x, pad.top+cH+18);
-  });
+  // Dealer last 30 days
+  const d30Map={};
+  cFilt.filter(r=>new Date(r.posting_date)>=cut30).forEach(r=>{const d=r.party_name||'?',v=r.paid_amount||0;d30Map[d]=(d30Map[d]||0)+v;});
+  let d30Rows=Object.entries(d30Map).map(([n,tot])=>({n,tot})).sort((a,b)=>b.tot-a.tot);
+  const d30pages=Math.ceil(d30Rows.length/dPS)||1;d30P=Math.min(d30P,d30pages);
+  const d30sl=d30Rows.slice((d30P-1)*dPS,d30P*dPS);
+  document.getElementById('d30-tbl').innerHTML=`<thead><tr><th>Dealer</th><th class="r">Last 30 Days</th></tr></thead>
+  <tbody>${d30sl.map(d=>`<tr><td class="nm" title="${d.n}">${d.n}</td><td class="r" style="color:var(--g);font-weight:600">${fC(d.tot)}</td></tr>`).join('')}</tbody>`;
+  const d30pag=document.getElementById('d30pag');
+  d30pag.innerHTML=`<button class="pbtn" id="d3-p" ${d30P===1?'disabled':''}>← Prev</button><span>Page ${d30P}/${d30pages} · ${d30Rows.length} dealers</span><button class="pbtn" id="d3-n" ${d30P>=d30pages?'disabled':''}>Next →</button>`;
+  document.getElementById('d3-p').onclick=()=>{d30P--;renderColl();};
+  document.getElementById('d3-n').onclick=()=>{d30P++;renderColl();};
 }
-
-function renderCollectionTable() {
-  const sorted = [...collectionFiltered].sort((a,b) => {
-    const {col, asc} = collSort;
-    const av = a[col]||0, bv = b[col]||0;
-    if (typeof av === 'string') return asc ? av.localeCompare(bv) : bv.localeCompare(av);
-    return asc ? av-bv : bv-av;
-  });
-  const total = sorted.length;
-  const pages = Math.ceil(total/collPageSize)||1;
-  collPage = Math.min(collPage, pages);
-  const slice = sorted.slice((collPage-1)*collPageSize, collPage*collPageSize);
-  const tbody = document.getElementById('tbody-collection');
-  if (!slice.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">📭</div>No entries found</div></td></tr>'; return; }
-  tbody.innerHTML = slice.map(r => `<tr>
-    <td>${(r.posting_date||'').slice(0,10)}</td>
-    <td class="name" title="${r.party_name||''}">${r.party_name||'—'}</td>
-    <td>${r['Dealer Region']||'—'}</td>
-    <td>${r.payment_type||'—'}</td>
-    <td class="num" style="color:var(--good);font-weight:600">${fmt(r.paid_amount)}</td>
-  </tr>`).join('');
-  const pag = document.getElementById('page-collection');
-  pag.innerHTML = `
-    <button class="page-btn" id="coll-prev" ${collPage===1?'disabled':''}>← Prev</button>
-    <span>Page ${collPage} of ${pages} &nbsp;·&nbsp; ${total} entries</span>
-    <button class="page-btn" id="coll-next" ${collPage>=pages?'disabled':''}>Next →</button>
-  `;
-  document.getElementById('coll-prev').onclick = () => { collPage--; renderCollectionTable(); };
-  document.getElementById('coll-next').onclick = () => { collPage++; renderCollectionTable(); };
-}
-
-document.getElementById('search-collection').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  collectionFiltered = q ? collectionData.filter(r => (r.party_name||'').toLowerCase().includes(q)) : [...collectionData];
-  collPage = 1;
-  renderCollectionTable();
+['fc-reg','fc-from','fc-to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{dmomP=1;d30P=1;renderColl();}));
+document.getElementById('fc-rst').addEventListener('click',()=>{
+  document.getElementById('fc-reg').value='';if(cDS)cDS.reset();
+  const dates=cAll.map(r=>r.posting_date).filter(Boolean).sort();
+  if(dates.length){document.getElementById('fc-from').value=dates[0].slice(0,10);document.getElementById('fc-to').value=dates[dates.length-1].slice(0,10);}
+  dmomP=1;d30P=1;renderColl();
 });
+document.getElementById('fc-mom-q').addEventListener('input',e=>{dmomQ=e.target.value.toLowerCase();dmomP=1;renderColl();});
+window.addEventListener('resize',()=>{if(document.getElementById('tab-collection').classList.contains('active'))renderColl();});
 
-// ─── COHORT ───────────────────────────────────────────────────
-function renderCohort(data) {
-  const kpi = document.getElementById('kpi-cohort');
+// ════════════════════════════════════════════════════════
+// TAB 3 – COHORT
+// ════════════════════════════════════════════════════════
+let coAll=[],coDS=null;
 
-  // Build pivot
-  const saleMonths = [...new Set(data.map(r => r['Sale Month']))].sort((a,b) => {
-    const sa = data.find(r=>r['Sale Month']===a)?.['Sale Month Sort']||0;
-    const sb = data.find(r=>r['Sale Month']===b)?.['Sale Month Sort']||0;
+async function initCohort(){
+  const d=await jf('data/cohort.json');if(!d)return;
+  coAll=d;
+  const sms=[...new Set(coAll.map(r=>r['Sale Month']))].sort((a,b)=>{
+    const sa=coAll.find(r=>r['Sale Month']===a)?.['Sale Month Sort']||0;
+    const sb=coAll.find(r=>r['Sale Month']===b)?.['Sale Month Sort']||0;
     return sa-sb;
   });
-  const collMonths = [...new Set(data.map(r => r['Collection Month']))].sort((a,b) => {
-    const sa = data.find(r=>r['Collection Month']===a)?.['Collection Month Sort']||0;
-    const sb = data.find(r=>r['Collection Month']===b)?.['Collection Month Sort']||0;
-    return sa-sb;
-  });
+  const mf=document.getElementById('fco-m');
+  sms.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;mf.appendChild(o);});
 
-  // Aggregate
-  const pivot = {};
-  const rowTotals = {};
-  const colTotals = {};
-  let grandTotal = 0;
-  data.forEach(r => {
-    const sm = r['Sale Month'], cm = r['Collection Month'], v = r.sub_total||0;
-    if (!pivot[sm]) pivot[sm] = {};
-    pivot[sm][cm] = (pivot[sm][cm]||0) + v;
-    rowTotals[sm] = (rowTotals[sm]||0) + v;
-    colTotals[cm] = (colTotals[cm]||0) + v;
-    grandTotal += v;
-  });
-
-  // KPIs
-  const pending = colTotals['Pending']||0;
-  const collected = grandTotal - pending;
-  kpi.innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total Invoiced</div><div class="kpi-value">${fmtShort(grandTotal)}</div></div>
-    <div class="kpi"><div class="kpi-label">Collected</div><div class="kpi-value good">${fmtShort(collected)}</div><div class="kpi-sub">${((collected/grandTotal)*100).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value warning">${fmtShort(pending)}</div><div class="kpi-sub">${((pending/grandTotal)*100).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="kpi-label">Sale Months</div><div class="kpi-value">${saleMonths.length}</div></div>
-  `;
-
-  // Max for heat
-  const allVals = saleMonths.flatMap(sm => collMonths.map(cm => pivot[sm]?.[cm]||0));
-  const maxVal = Math.max(...allVals)||1;
-
-  function heatClass(v) {
-    if (!v) return 'heat-0';
-    const r = v/maxVal;
-    if (r > 0.8) return 'heat-5';
-    if (r > 0.6) return 'heat-4';
-    if (r > 0.4) return 'heat-3';
-    if (r > 0.2) return 'heat-2';
-    return 'heat-1';
-  }
-
-  const container = document.getElementById('cohort-table-container');
-  container.innerHTML = `
-    <table class="cohort-table" style="width:100%;border-collapse:collapse;font-size:11.5px">
-      <thead>
-        <tr>
-          <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap">Sale Month</th>
-          ${collMonths.map(cm => `<th style="padding:10px 10px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap${cm==='Pending'?';color:var(--warning)':cm==='paid before invoice'?';color:var(--text3)':''}">${cm}</th>`).join('')}
-          <th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:600;color:var(--text);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--surface2)">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${saleMonths.map(sm => `<tr>
-          <td style="padding:8px 14px;font-weight:600;color:var(--text);white-space:nowrap;border-bottom:1px solid var(--border)">${sm}</td>
-          ${collMonths.map(cm => {
-            const v = pivot[sm]?.[cm]||0;
-            const hc = heatClass(v);
-            return `<td class="${hc}" style="padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">${v ? fmtShort(v) : ''}</td>`;
-          }).join('')}
-          <td style="padding:8px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text)">${fmtShort(rowTotals[sm]||0)}</td>
-        </tr>`).join('')}
-        <tr style="background:var(--surface2)">
-          <td style="padding:10px 14px;font-weight:600;color:var(--text);border-top:2px solid var(--border)">Total</td>
-          ${collMonths.map(cm => `<td style="padding:10px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;border-top:2px solid var(--border);font-weight:600;color:var(--text)">${fmtShort(colTotals[cm]||0)}</td>`).join('')}
-          <td style="padding:10px 14px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;border-top:2px solid var(--border);font-weight:700;color:var(--accent)">${fmtShort(grandTotal)}</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
+  // Dealer dropdown sorted by total invoice desc
+  const dTot={};
+  coAll.forEach(r=>{const n=r.customer_name||'';dTot[n]=(dTot[n]||0)+(r.sub_total||0);});
+  const dSorted=Object.entries(dTot).sort((a,b)=>b[1]-a[1]).map(([k])=>k).filter(Boolean);
+  coDS=makeSearchDrop('co-dsel-wrap','co-dsel-inp','co-dsel-drop',
+    ()=>dSorted.map(v=>({value:v,label:v})),
+    ()=>renderCohort()
+  );
+  renderCohort();
 }
 
-// ─── INIT ─────────────────────────────────────────────────────
-async function init() {
-  const [outstanding, collection, cohort] = await Promise.all([
-    loadJSON('data/dealer_outstanding.json'),
-    loadJSON('data/daily_collection.json'),
-    loadJSON('data/cohort.json'),
-  ]);
+function renderCohort(){
+  if(!coAll.length)return;
+  const selM=document.getElementById('fco-m').value;
+  const dealer=coDS?coDS.getVal():'';
+  let data=coAll.filter(r=>(!selM||r['Sale Month']===selM)&&(!dealer||r.customer_name===dealer));
 
-  document.getElementById('refreshMeta').textContent = 'Updated: ' + new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+  const smSet=new Set(),cmSet=new Set();
+  data.forEach(r=>{smSet.add(r['Sale Month']);cmSet.add(r['Collection Month']);});
+  const smSort=sm=>data.find(r=>r['Sale Month']===sm)?.['Sale Month Sort']||0;
+  const cmSort=cm=>data.find(r=>r['Collection Month']===cm)?.['Collection Month Sort']||999999;
+  const sms=[...smSet].sort((a,b)=>smSort(a)-smSort(b));
+  const cms=[...cmSet].sort((a,b)=>cmSort(a)-cmSort(b));
 
-  if (outstanding) {
-    outstandingData = outstanding;
-    outstandingFiltered = [...outstanding];
-    renderOutstanding();
-  } else {
-    document.getElementById('kpi-outstanding').innerHTML = '';
-    document.getElementById('tbody-outstanding').innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div></td></tr>';
-  }
+  const piv={},rTot={},cTot={};let grand=0;
+  data.forEach(r=>{
+    const sm=r['Sale Month'],cm=r['Collection Month'],v=r.sub_total||0;
+    if(!piv[sm])piv[sm]={};
+    piv[sm][cm]=(piv[sm][cm]||0)+v;
+    rTot[sm]=(rTot[sm]||0)+v;cTot[cm]=(cTot[cm]||0)+v;grand+=v;
+  });
+  const maxV=Math.max(...sms.flatMap(sm=>cms.map(cm=>piv[sm]?.[cm]||0)))||1;
+  const hc=v=>{if(!v)return'';const r=v/maxV;return r>.8?'h5':r>.6?'h4':r>.4?'h3':r>.2?'h2':'h1';};
 
-  if (collection) {
-    collectionData = collection;
-    collectionFiltered = [...collection];
-    renderCollection();
-  } else {
-    document.getElementById('kpi-collection').innerHTML = '';
-    document.getElementById('tbody-collection').innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div></td></tr>';
-  }
+  document.getElementById('mxa').innerHTML=`<table class="mx">
+    <thead><tr><th>Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':cm==='paid before invoice'?'color:var(--tx3)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
+    <tbody>${sms.map(sm=>`<tr><td class="sl">${sm}</td>${cms.map(cm=>{const v=piv[sm]?.[cm]||0;return`<td class="r ${hc(v)}">${v?fC(v):''}</td>`;}).join('')}<td class="r" style="font-weight:600">${fC(rTot[sm]||0)}</td></tr>`).join('')}
+    <tr class="tot"><td>Total</td>${cms.map(cm=>`<td class="r">${fC(cTot[cm]||0)}</td>`).join('')}<td class="r">${fC(grand)}</td></tr></tbody></table>`;
 
-  if (cohort) {
-    renderCohort(cohort);
-  } else {
-    document.getElementById('kpi-cohort').innerHTML = '';
-    document.getElementById('cohort-table-container').innerHTML = '<div class="empty"><div class="icon">⚠️</div>No data — run fetch_data.py first</div>';
-  }
+  document.getElementById('mxp').innerHTML=`<table class="mx">
+    <thead><tr><th>Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
+    <tbody>${sms.map(sm=>{const rt=rTot[sm]||1;return`<tr><td class="sl">${sm}</td>${cms.map(cm=>{const v=piv[sm]?.[cm]||0,p=v/rt;return`<td class="r" style="${cm==='Pending'&&p>0?'color:var(--w)':''}">${p?fP2(p):''}</td>`;}).join('')}<td class="r" style="font-weight:600">100.00%</td></tr>`;}).join('')}
+    <tr class="tot"><td>Total</td>${cms.map(cm=>`<td class="r">${grand?fP2((cTot[cm]||0)/grand):''}</td>`).join('')}<td class="r">100.00%</td></tr></tbody></table>`;
 }
+document.getElementById('fco-m').addEventListener('change',renderCohort);
+document.getElementById('fco-rst').addEventListener('click',()=>{document.getElementById('fco-m').value='';if(coDS)coDS.reset();renderCohort();});
 
-init();
-window.addEventListener('resize', () => { if (collectionData.length) renderCollectionChart(); });
+// boot — sequential to avoid overloading the single-threaded dev server
+initOut().then(()=>initColl()).then(()=>initCohort());
 </script>
 </body>
 </html>

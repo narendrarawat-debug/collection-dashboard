@@ -1,21 +1,17 @@
-import os
-import json
-import requests
+import json, requests, os
 
-TENANT_ID = os.environ["TENANT_ID"]
-CLIENT_ID = os.environ["CLIENT_ID"]
-CLIENT_SECRET = os.environ["CLIENT_SECRET"]
+TENANT_ID = "b7d6697c-4617-438d-9e38-a24db9a09087"
+CLIENT_ID = "3541ac5b-3a01-4e8b-b4fb-381718e108e4"
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET", "")  # set via env var or run_local.ps1
 DATASET_ID = "1a2f4bf9-37a6-4f06-acc2-285e76fccdfe"
 
+
 def get_token():
-    url = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
-    data = {
-        "grant_type": "client_credentials",
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "scope": "https://analysis.windows.net/powerbi/api/.default",
-    }
-    r = requests.post(url, data=data)
+    r = requests.post(
+        f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token",
+        data={"grant_type": "client_credentials", "client_id": CLIENT_ID,
+              "client_secret": CLIENT_SECRET,
+              "scope": "https://analysis.windows.net/powerbi/api/.default"})
     r.raise_for_status()
     return r.json()["access_token"]
 
@@ -27,35 +23,28 @@ def run_dax(token, query):
     r = requests.post(url, headers=headers, json=body)
     r.raise_for_status()
     rows = r.json()["results"][0]["tables"][0].get("rows", [])
-    # strip table prefix from column names  e.g. "dealer outstanding[party]" -> "party"
-    cleaned = []
-    for row in rows:
-        cleaned.append({k.split("[")[-1].rstrip("]"): v for k, v in row.items()})
-    return cleaned
+    return [{k.split("[")[-1].rstrip("]"): v for k, v in row.items()} for row in rows]
 
 
 def main():
     token = get_token()
 
-    # 1. Dealer outstanding
-    dealer_outstanding = run_dax(token, """
+    # 1. Dealer outstanding — ADDCOLUMNS to get measures per dealer row
+    try:
+        dealer_outstanding = run_dax(token, """
 EVALUATE
-SELECTCOLUMNS(
+ADDCOLUMNS(
     FILTER('dealer outstanding', 'dealer outstanding'[Is Dealer Match] = TRUE()),
-    "customer_name", 'dealer outstanding'[customer_name],
-    "territory", 'dealer outstanding'[territory],
-    "customer_group", 'dealer outstanding'[customer_group],
-    "0_30", 'dealer outstanding'[0-30],
-    "31_60", 'dealer outstanding'[31-60],
-    "61_90", 'dealer outstanding'[61-90],
-    "91_120", 'dealer outstanding'[91-120],
-    "121_150", 'dealer outstanding'[121-150],
-    "151_above", 'dealer outstanding'[151-Above],
-    "total_outstanding", 'dealer outstanding'[total_outstanding],
-    "is_sse_eligible", 'dealer outstanding'[is_sse_eligible],
-    "Is Recovery Dealer", 'dealer outstanding'[Is Recovery Dealer]
+    "primary_sales_90d", [Primary Sales (Last 90 Days)],
+    "secondary_units_90d", [Secondary Units (Last 90 Days)],
+    "sec_primary_ratio", [Sec./Primary Ratio]
 )
-ORDER BY 'dealer outstanding'[total_outstanding] DESC
+""")
+    except Exception as e:
+        print(f"Warning: measure fetch failed ({e}), retrying without measures")
+        dealer_outstanding = run_dax(token, """
+EVALUATE
+FILTER('dealer outstanding', 'dealer outstanding'[Is Dealer Match] = TRUE())
 """)
 
     # 2. Daily collection (last 90 days)
@@ -69,17 +58,32 @@ SELECTCOLUMNS(
     "payment_type", 'Daily Collection'[payment_type],
     "Dealer Region", 'Daily Collection'[Dealer Region]
 )
-ORDER BY 'Daily Collection'[posting_date] DESC
 """)
 
-    # 3. Sales vs collection cohort (invoice level)
-    cohort = run_dax(token, """
+    # 3. Cohort — filter to Is Bike Invoice = TRUE, only columns needed for pivot
+    try:
+        cohort_raw = run_dax(token, """
+EVALUATE
+SELECTCOLUMNS(
+    CALCULATETABLE(
+        'invoice level sales',
+        'invoice level sales'[Is Bike Invoice] = TRUE()
+    ),
+    "customer_name", 'invoice level sales'[customer_name],
+    "sub_total", 'invoice level sales'[sub_total],
+    "Sale Month", 'invoice level sales'[Sale Month],
+    "Sale Month Sort", 'invoice level sales'[Sale Month Sort],
+    "Collection Month", 'invoice level sales'[Collection Month],
+    "Collection Month Sort", 'invoice level sales'[Collection Month Sort]
+)
+""")
+    except Exception as e:
+        print(f"Warning: cohort with Is Bike Invoice failed ({e}), retrying without filter")
+        cohort_raw = run_dax(token, """
 EVALUATE
 SELECTCOLUMNS(
     'invoice level sales',
-    "invoice_code", 'invoice level sales'[invoice_code],
     "customer_name", 'invoice level sales'[customer_name],
-    "invoice_at", 'invoice level sales'[invoice_at],
     "sub_total", 'invoice level sales'[sub_total],
     "Sale Month", 'invoice level sales'[Sale Month],
     "Sale Month Sort", 'invoice level sales'[Sale Month Sort],
@@ -88,17 +92,34 @@ SELECTCOLUMNS(
 )
 """)
 
+    # Pre-aggregate to dealer × Sale Month × Collection Month to keep JSON small
+    from collections import defaultdict
+    agg = {}
+    sm_sort_map, cm_sort_map = {}, {}
+    for r in cohort_raw:
+        sm, cm, dealer = r.get('Sale Month',''), r.get('Collection Month',''), r.get('customer_name','')
+        key = (dealer, sm, cm)
+        agg[key] = agg.get(key, 0) + (r.get('sub_total') or 0)
+        sm_sort_map[sm] = r.get('Sale Month Sort', 0)
+        cm_sort_map[cm] = r.get('Collection Month Sort', 0)
+    cohort = [
+        {'customer_name': k[0], 'Sale Month': k[1], 'Sale Month Sort': sm_sort_map[k[1]],
+         'Collection Month': k[2], 'Collection Month Sort': cm_sort_map[k[2]], 'sub_total': v}
+        for k, v in agg.items()
+    ]
+    print(f"  (aggregated {len(cohort_raw)} invoice rows → {len(cohort)} pivot rows)")
+
     os.makedirs("data", exist_ok=True)
-    with open("data/dealer_outstanding.json", "w") as f:
+    with open("data/dealer_outstanding.json", "w", encoding="utf-8") as f:
         json.dump(dealer_outstanding, f)
-    with open("data/daily_collection.json", "w") as f:
+    with open("data/daily_collection.json", "w", encoding="utf-8") as f:
         json.dump(daily_collection, f)
-    with open("data/cohort.json", "w") as f:
+    with open("data/cohort.json", "w", encoding="utf-8") as f:
         json.dump(cohort, f)
 
     print(f"Dealer outstanding: {len(dealer_outstanding)} rows")
-    print(f"Daily collection: {len(daily_collection)} rows")
-    print(f"Cohort: {len(cohort)} rows")
+    print(f"Daily collection:   {len(daily_collection)} rows")
+    print(f"Cohort:             {len(cohort)} rows")
 
 
 if __name__ == "__main__":
