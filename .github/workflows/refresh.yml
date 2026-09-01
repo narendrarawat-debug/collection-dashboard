@@ -2,7 +2,12 @@ name: Refresh Data
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # runs daily at 2am UTC (7:30am IST)
+    - cron: "30 4 * * *"   # 10:00am IST
+    - cron: "30 5 * * *"   # 11:00am IST
+    - cron: "30 6 * * *"   # 12:00pm IST
+    - cron: "30 7 * * *"   # 1:00pm IST
+    - cron: "30 8 * * *"   # 2:00pm IST
+    - cron: "30 12 * * *"  # 6:00pm IST
   workflow_dispatch:        # manual trigger from GitHub UI
 
 jobs:
