@@ -76,8 +76,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
 .mx{font-size:11.5px;border-collapse:collapse;width:100%}
 .mx th{font-size:10px;padding:7px 9px;background:var(--sf2)}
 .mx th.r{text-align:right}
+.mx th.stick{position:sticky;left:0;z-index:3;background:var(--sf2)}
 .mx td{padding:5px 9px;border-bottom:1px solid var(--bd)}
-.mx td.sl{font-weight:600;color:var(--tx);white-space:nowrap;min-width:80px}
+.mx td.sl{font-weight:600;color:var(--tx);white-space:nowrap;min-width:100px;position:sticky;left:0;z-index:1;background:var(--sf)}
+.mx tr.tot td.sl{background:var(--sf2)}
 .mx td.r{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;text-align:right}
 .mx tr.tot td{background:var(--sf2);font-weight:700;color:var(--tx);border-top:2px solid var(--bd)}
 .h1{background:rgba(20,184,166,.07)}.h2{background:rgba(20,184,166,.15)}.h3{background:rgba(20,184,166,.27)}.h4{background:rgba(20,184,166,.42)}.h5{background:rgba(20,184,166,.62);color:#fff!important}
@@ -94,6 +96,17 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
 .sdrop .sopt{padding:6px 10px;font-size:12px;cursor:pointer;color:var(--tx2)}
 .sdrop .sopt:hover,.sdrop .sopt.sel{background:var(--acl);color:var(--ac)}
 .sdrop .sopt.sel{font-weight:600}
+/* MULTI-SELECT DROPDOWN */
+.ms-wrap{position:relative;display:inline-block}
+.ms-btn{padding:5px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--sf);color:var(--tx);font-size:12px;font-family:inherit;cursor:pointer;min-width:100px;text-align:left;white-space:nowrap}
+.ms-btn:focus{outline:none;border-color:var(--ac)}
+.ms-wrap.open .ms-btn{border-color:var(--ac)}
+.ms-drop{position:absolute;top:calc(100% + 2px);left:0;min-width:180px;max-height:240px;overflow-y:auto;background:var(--sf);border:1px solid var(--bd);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;display:none;padding:4px 0}
+.ms-wrap.open .ms-drop{display:block}
+.ms-item{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--tx2)}
+.ms-item:hover{background:var(--acl);color:var(--ac)}
+.ms-item input[type=checkbox]{accent-color:var(--ac);width:13px;height:13px;cursor:pointer}
+.ms-note{font-size:10px;color:var(--tx3);padding:2px 10px 4px;border-top:1px solid var(--bd);margin-top:2px}
 </style>
 </head>
 <body>
@@ -119,17 +132,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
   </div>
   <div class="fb">
     <label>Dealer Region</label>
-    <select class="f" id="fo-reg"><option value="">All</option></select>
+    <div class="ms-wrap" id="fo-reg-wrap"><button class="ms-btn" id="fo-reg-btn">All</button><div class="ms-drop" id="fo-reg-drop"></div></div>
     <label>SSE Eligible</label>
     <select class="f" id="fo-sse"><option value="">All</option><option>Yes</option><option>No</option></select>
     <label>Is Recovery Dealer</label>
     <select class="f" id="fo-rec"><option value="">All</option><option>Yes</option><option>No</option></select>
     <div class="fsep"></div>
     <label>Dealer Name</label>
-    <div class="sel-wrap" id="o-dsel-wrap">
-      <input class="sb" id="o-dsel-inp" placeholder="Search dealer…" autocomplete="off">
-      <div class="sdrop" id="o-dsel-drop"></div>
-    </div>
+    <div class="ms-wrap" id="o-dsel-wrap"><button class="ms-btn" id="o-dsel-btn">All</button><div class="ms-drop" id="o-dsel-drop"></div></div>
   </div>
   <div class="card">
     <div class="ch"><span class="ct">Dealer Aging Summary</span><span style="font-size:11px;color:var(--tx3)" id="ocnt"></span></div>
@@ -162,14 +172,12 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
 
 <!-- ══ TAB 2 ══ -->
 <div class="sec" id="tab-collection">
+  <div style="font-size:11px;color:var(--tx3);padding:4px 0 6px;font-style:italic">⚠ Viper advance amount is excluded from collection data</div>
   <div class="fb">
     <label>Dealer Region</label>
-    <select class="f" id="fc-reg"><option value="">All</option></select>
+    <div class="ms-wrap" id="fc-reg-wrap"><button class="ms-btn" id="fc-reg-btn">All</button><div class="ms-drop" id="fc-reg-drop"></div></div>
     <label>Dealer Name</label>
-    <div class="sel-wrap" id="c-dsel-wrap">
-      <input class="sb" id="c-dsel-inp" placeholder="Search dealer…" autocomplete="off">
-      <div class="sdrop" id="c-dsel-drop"></div>
-    </div>
+    <div class="ms-wrap" id="c-dsel-wrap"><button class="ms-btn" id="c-dsel-btn">All</button><div class="ms-drop" id="c-dsel-drop"></div></div>
     <div class="fsep"></div>
     <label>From</label><input type="date" class="f" id="fc-from">
     <label>To</label><input type="date" class="f" id="fc-to">
@@ -181,8 +189,8 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
       <div class="tw"><table id="mom-tbl"></table></div>
     </div>
     <div class="card">
-      <div class="ch"><span class="ct">Daily Collection — Last 30 Days</span></div>
-      <div class="chw"><canvas id="cchart" height="220"></canvas></div>
+      <div class="ch"><span class="ct">Daily Collection — Region × Date</span><span style="font-size:11px;color:var(--tx3)">scroll →</span></div>
+      <div class="tw"><table id="dod-tbl"></table></div>
     </div>
   </div>
   <div class="g2">
@@ -192,7 +200,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
       <div class="pag" id="dpag"></div>
     </div>
     <div class="card">
-      <div class="ch"><span class="ct">Dealer Wise — Last 30 Days</span></div>
+      <div class="ch"><span class="ct">Dealer × Date Collection (Last 30 Days)</span><input class="sb" style="width:160px" id="fc-d30-q" placeholder="Search dealer…"></div>
       <div class="tw"><table id="d30-tbl"></table></div>
       <div class="pag" id="d30pag"></div>
     </div>
@@ -203,14 +211,9 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--sf2)}
 <div class="sec" id="tab-cohort">
   <div class="fb">
     <label>Sale Month</label>
-    <select class="f" id="fco-m" style="min-width:140px">
-      <option value="">All</option>
-    </select>
+    <div class="ms-wrap" id="fco-m-wrap"><button class="ms-btn" id="fco-m-btn" style="min-width:140px">All</button><div class="ms-drop" id="fco-m-drop"></div></div>
     <label>Dealer Name</label>
-    <div class="sel-wrap" id="co-dsel-wrap">
-      <input class="sb" id="co-dsel-inp" placeholder="Search dealer…" autocomplete="off">
-      <div class="sdrop" id="co-dsel-drop"></div>
-    </div>
+    <div class="ms-wrap" id="co-dsel-wrap"><button class="ms-btn" id="co-dsel-btn">All</button><div class="ms-drop" id="co-dsel-drop"></div></div>
     <button class="pbtn" id="fco-rst">Reset</button>
   </div>
   <div class="card">
@@ -242,6 +245,47 @@ document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>{
 }));
 
 async function jf(p){try{const r=await fetch(p);return r.ok?r.json():null;}catch{return null;}}
+
+// ── multi-select dropdown helper ─────────────────────────
+function makeMultiDrop(wrapId, btnId, dropId, items, onChange, searchable) {
+  const wrap=document.getElementById(wrapId);
+  const btn=document.getElementById(btnId);
+  const drop=document.getElementById(dropId);
+  let sel=new Set(), q='';
+
+  function render(){
+    drop.innerHTML='';
+    if(searchable){
+      const si=document.createElement('input');
+      si.type='text';si.placeholder='Search…';
+      si.style.cssText='width:calc(100% - 16px);margin:6px 8px;padding:4px 8px;border:1px solid var(--bd);border-radius:5px;background:var(--sf);color:var(--tx);font-size:12px;font-family:inherit;outline:none';
+      si.value=q;
+      si.onmousedown=e=>e.stopPropagation();
+      si.oninput=e=>{q=e.target.value;render();si.focus();};
+      drop.appendChild(si);
+    }
+    const filtered=q?items.filter(v=>v.toLowerCase().includes(q.toLowerCase())):items;
+    // All
+    const allItem=document.createElement('div');allItem.className='ms-item';
+    const allCb=document.createElement('input');allCb.type='checkbox';allCb.checked=sel.size===0;
+    allItem.appendChild(allCb);allItem.appendChild(Object.assign(document.createElement('span'),{textContent:'All'}));
+    allItem.onmousedown=e=>{e.preventDefault();sel.clear();q='';render();onChange([]);};
+    drop.appendChild(allItem);
+    filtered.slice(0,120).forEach(v=>{
+      const it=document.createElement('div');it.className='ms-item';
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=sel.has(v);
+      it.appendChild(cb);it.appendChild(Object.assign(document.createElement('span'),{textContent:v}));
+      it.onmousedown=e=>{e.preventDefault();sel.has(v)?sel.delete(v):sel.add(v);render();onChange([...sel]);};
+      drop.appendChild(it);
+    });
+    btn.textContent=sel.size===0?'All':sel.size===1?[...sel][0]:sel.size+' selected';
+  }
+
+  btn.addEventListener('click',e=>{e.stopPropagation();wrap.classList.toggle('open');if(wrap.classList.contains('open')){render();if(searchable)setTimeout(()=>drop.querySelector('input')?.focus(),50);}});
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target)){wrap.classList.remove('open');}});
+  render();
+  return {reset:()=>{sel.clear();q='';render();onChange([]);},getVals:()=>[...sel]};
+}
 
 // ── searchable dropdown helper ────────────────────────────
 function makeSearchDrop(wrapId, inpId, dropId, getItems, onSelect) {
@@ -298,18 +342,28 @@ async function initOut(){
     plt60:r.total_outstanding?(r.lt60/r.total_outstanding):0,
     p6090:r.total_outstanding?(r.b6090/r.total_outstanding):0,
     pgt90:r.total_outstanding?(r.gt90/r.total_outstanding):0,
-  }));
+  })).map(r=>{
+    const pct60plus=r.p6090+r.pgt90;
+    const primary=r.primary_sales_90d||0;
+    const secondary=r.secondary_units_90d||0;
+    const ratio=primary>0?secondary/primary:null;
+    let remarks;
+    if(r['Is Recovery Dealer']==='Yes') remarks='Recovery Dealer';
+    else if(pct60plus<0.2) remarks='Healthy';
+    else if(primary===0&&secondary===0) remarks='Inactive Dealer';
+    else if(primary===0) remarks='Selling Well - Follow Up on Payment';
+    else if(ratio<0.3) remarks='Slow Sell-Through - Inventory Stuck';
+    else remarks='Selling Well - Follow Up on Payment';
+    return {...r,dealer_remarks:r.dealer_remarks||remarks};
+  });
 
-  // Region filter
+  // Region multi-select
   const regs=[...new Set(oAll.map(r=>r.territory).filter(Boolean))].sort();
-  const rf=document.getElementById('fo-reg');
-  regs.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rf.appendChild(o);});
+  window._oRegMS=makeMultiDrop('fo-reg-wrap','fo-reg-btn','fo-reg-drop',regs,()=>{oPage=1;applyOut();});
 
-  // Dealer searchable dropdown — sorted by total outstanding desc
-  oDS=makeSearchDrop('o-dsel-wrap','o-dsel-inp','o-dsel-drop',
-    ()=>[...oAll].sort((a,b)=>(b.total_outstanding||0)-(a.total_outstanding||0)).map(r=>({value:r.customer_name||'',label:r.customer_name||''})),
-    ()=>{oPage=1;applyOut();}
-  );
+  // Dealer multi-select (searchable) — sorted by total outstanding desc
+  const dealersO=[...oAll].sort((a,b)=>(b.total_outstanding||0)-(a.total_outstanding||0)).map(r=>r.customer_name||'').filter(Boolean);
+  oDS=makeMultiDrop('o-dsel-wrap','o-dsel-btn','o-dsel-drop',dealersO,()=>{oPage=1;applyOut();},true);
 
   document.getElementById('nmeta').textContent='Updated: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
   applyOut();
@@ -318,14 +372,14 @@ async function initOut(){
 }
 
 function applyOut(){
-  const reg=document.getElementById('fo-reg').value;
+  const regs=window._oRegMS?window._oRegMS.getVals():[];
   const sse=document.getElementById('fo-sse').value;
   const rec=document.getElementById('fo-rec').value;
-  const dealer=oDS?oDS.getVal():'';
-  oFilt=oAll.filter(r=>(!reg||r.territory===reg)&&(!sse||r.is_sse_eligible===sse)&&(!rec||r['Is Recovery Dealer']===rec)&&(!dealer||r.customer_name===dealer));
+  const dealers=oDS?oDS.getVals():[];
+  oFilt=oAll.filter(r=>(!regs.length||regs.includes(r.territory))&&(!sse||r.is_sse_eligible===sse)&&(!rec||r['Is Recovery Dealer']===rec)&&(!dealers.length||dealers.includes(r.customer_name)));
   oPage=1;renderOut();
 }
-['fo-reg','fo-sse','fo-rec'].forEach(id=>document.getElementById(id).addEventListener('change',applyOut));
+['fo-sse','fo-rec'].forEach(id=>document.getElementById(id).addEventListener('change',applyOut));
 
 function renderOut(){
   const tot=oFilt.reduce((s,r)=>s+(r.total_outstanding||0),0);
@@ -388,7 +442,7 @@ document.querySelectorAll('#otbl th[data-c]').forEach(th=>th.addEventListener('c
 // ════════════════════════════════════════════════════════
 // TAB 2 – DAILY COLLECTION
 // ════════════════════════════════════════════════════════
-let cAll=[],cFilt=[],cDS=null,dmomQ='',dmomP=1,d30P=1;
+let cAll=[],cFilt=[],cDS=null,dmomQ='',dmomP=1,d30Q='',d30P=1;
 const dPS=30;
 
 async function initColl(){
@@ -396,66 +450,95 @@ async function initColl(){
   cAll=d;
   const dates=cAll.map(r=>r.posting_date).filter(Boolean).sort();
   if(dates.length){
-    document.getElementById('fc-from').value=dates[0].slice(0,10);
+    // default from = 1st of earliest month so no data is hidden
+    const firstDate=dates[0].slice(0,10);
+    document.getElementById('fc-from').value=firstDate.slice(0,8)+'01';
     document.getElementById('fc-to').value=dates[dates.length-1].slice(0,10);
   }
+  // Region multi-select
   const regs=[...new Set(cAll.map(r=>r['Dealer Region']).filter(Boolean))].sort();
-  const rf=document.getElementById('fc-reg');
-  regs.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rf.appendChild(o);});
+  window._cRegMS=makeMultiDrop('fc-reg-wrap','fc-reg-btn','fc-reg-drop',regs,()=>{dmomP=1;d30P=1;renderColl();});
 
-  // Dealer searchable — sorted by total paid desc
+  // Dealer multi-select (searchable) — sorted by total paid desc
   const dealerTot={};
   cAll.forEach(r=>{const d=r.party_name||'';dealerTot[d]=(dealerTot[d]||0)+(r.paid_amount||0);});
   const dealersSorted=Object.entries(dealerTot).sort((a,b)=>b[1]-a[1]).map(([k])=>k).filter(Boolean);
-  cDS=makeSearchDrop('c-dsel-wrap','c-dsel-inp','c-dsel-drop',
-    ()=>dealersSorted.map(v=>({value:v,label:v})),
-    ()=>{dmomP=1;d30P=1;renderColl();}
-  );
+  cDS=makeMultiDrop('c-dsel-wrap','c-dsel-btn','c-dsel-drop',dealersSorted,()=>{dmomP=1;d30P=1;renderColl();},true);
   renderColl(); // auto-render once data + cDS ready
 }
 
 function renderColl(){
   if(!cAll.length)return;
-  const reg=document.getElementById('fc-reg').value;
-  const dealer=cDS?cDS.getVal():'';
+  const regs=window._cRegMS?window._cRegMS.getVals():[];
+  const dealers=cDS?cDS.getVals():[];
   const from=document.getElementById('fc-from').value;
   const to=document.getElementById('fc-to').value;
-  cFilt=cAll.filter(r=>(!reg||r['Dealer Region']===reg)&&(!dealer||r.party_name===dealer)&&(!from||(r.posting_date||'').slice(0,10)>=from)&&(!to||(r.posting_date||'').slice(0,10)<=to));
+  cFilt=cAll.filter(r=>(!regs.length||regs.includes(r['Dealer Region']))&&(!dealers.length||dealers.includes(r.party_name))&&(!from||(r.posting_date||'').slice(0,10)>=from)&&(!to||(r.posting_date||'').slice(0,10)<=to));
 
   // MOM by region
   const mSet=new Set();cFilt.forEach(r=>{const m=(r.posting_date||'').slice(0,7);if(m)mSet.add(m);});
   const months=[...mSet].sort();
   const mLbls=months.map(m=>{const[y,mo]=m.split('-');return new Date(+y,+mo-1).toLocaleString('en-IN',{month:'short',year:'numeric'});});
-  const regs=[...new Set(cFilt.map(r=>r['Dealer Region']).filter(Boolean))].sort();
+  const momRegs=[...new Set(cFilt.map(r=>r['Dealer Region']).filter(Boolean))].sort();
   const mom={},mTot={};
   cFilt.forEach(r=>{const rg=r['Dealer Region']||'Other',m=(r.posting_date||'').slice(0,7),v=r.paid_amount||0;if(!mom[rg])mom[rg]={};mom[rg][m]=(mom[rg][m]||0)+v;mTot[m]=(mTot[m]||0)+v;});
   const grand=Object.values(mTot).reduce((s,v)=>s+v,0);
   document.getElementById('mom-tbl').innerHTML=`<thead><tr><th>Dealer Region</th>${mLbls.map(m=>`<th class="r">${m}</th>`).join('')}<th class="r">Total</th></tr></thead>
-  <tbody>${regs.map(rg=>{const rt=months.reduce((s,m)=>s+(mom[rg]?.[m]||0),0);return`<tr><td style="font-weight:600">${rg}</td>${months.map(m=>`<td class="r">${fC(mom[rg]?.[m])||''}</td>`).join('')}<td class="r" style="font-weight:600">${fC(rt)}</td></tr>`;}).join('')}
+  <tbody>${momRegs.map(rg=>{const rt=months.reduce((s,m)=>s+(mom[rg]?.[m]||0),0);return`<tr><td style="font-weight:600">${rg}</td>${months.map(m=>`<td class="r">${fC(mom[rg]?.[m])||''}</td>`).join('')}<td class="r" style="font-weight:600">${fC(rt)}</td></tr>`;}).join('')}
   <tr style="background:var(--sf2);font-weight:700;border-top:2px solid var(--bd)"><td>Total</td>${months.map(m=>`<td class="r">${fC(mTot[m])}</td>`).join('')}<td class="r">${fC(grand)}</td></tr></tbody>`;
 
-  // Last 30 days bar chart
-  const cut30=new Date(Date.now()-30*864e5);
-  const byDate={};
-  cFilt.filter(r=>new Date(r.posting_date)>=cut30).forEach(r=>{const d=(r.posting_date||'').slice(0,10);if(d)byDate[d]=(byDate[d]||0)+(r.paid_amount||0);});
-  const dates30=Object.keys(byDate).sort(),vals30=dates30.map(d=>byDate[d]);
-  const canvas=document.getElementById('cchart');
-  const W=canvas.parentElement.clientWidth-28,H=220;
-  canvas.width=W;canvas.height=H;
-  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,W,H);
-  if(dates30.length){
-    const pad={t:16,r:12,b:38,l:68},cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
-    const maxV=Math.max(...vals30)*1.1||1;
-    const ac=getComputedStyle(document.documentElement).getPropertyValue('--ac').trim()||'#14B8A6';
-    const t3=getComputedStyle(document.documentElement).getPropertyValue('--tx3').trim()||'#8A9BB0';
-    const bd=getComputedStyle(document.documentElement).getPropertyValue('--bd').trim()||'#D8E0EC';
-    ctx.strokeStyle=bd;ctx.lineWidth=1;
-    for(let i=0;i<=4;i++){const y=pad.t+(cH/4)*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke();ctx.fillStyle=t3;ctx.font='9px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText(fC(maxV*(1-i/4)),pad.l-3,y+3);}
-    const bW=Math.max(4,Math.min(18,cW/dates30.length-2)),step=cW/dates30.length;
-    dates30.forEach((d,i)=>{const x=pad.l+i*step+step/2,h=(vals30[i]/maxV)*cH,y=pad.t+cH-h;ctx.fillStyle=ac;ctx.globalAlpha=.88;ctx.fillRect(x-bW/2,y,bW,h);ctx.globalAlpha=1;});
-    ctx.fillStyle=t3;ctx.font='9px IBM Plex Sans,sans-serif';ctx.textAlign='center';
-    dates30.forEach((d,i)=>{if(i%5!==0)return;ctx.fillText(d.slice(5),pad.l+i*step+step/2,pad.t+cH+16);});
-  }
+  // Region × Date matrix (last 10 days, newest first)
+  const cut10=new Date(Date.now()-10*864e5);
+  const dodDates=[...new Set(cFilt.filter(r=>new Date(r.posting_date)>=cut10).map(r=>(r.posting_date||'').slice(0,10)).filter(Boolean))].sort().reverse();
+  const dodRegsAll=[...new Set(cFilt.map(r=>r['Dealer Region']).filter(Boolean))].sort();
+  const dodMap={},dodColTot={},dodRowTot={};let dodGrand=0;
+  cFilt.filter(r=>new Date(r.posting_date)>=cut10).forEach(r=>{const rg=r['Dealer Region']||'NA',dt=(r.posting_date||'').slice(0,10),v=r.paid_amount||0;
+    if(!dodMap[rg])dodMap[rg]={};dodMap[rg][dt]=(dodMap[rg][dt]||0)+v;
+    dodColTot[dt]=(dodColTot[dt]||0)+v;dodRowTot[rg]=(dodRowTot[rg]||0)+v;dodGrand+=v;});
+  document.getElementById('dod-tbl').innerHTML=`<thead><tr>
+    <th style="position:sticky;left:0;z-index:2;background:var(--sf2)">Dealer Region</th>
+    ${dodDates.map(d=>`<th class="r">${d.slice(5)}</th>`).join('')}
+    <th class="r">Total</th></tr></thead>
+  <tbody>${dodRegsAll.map(rg=>`<tr>
+    <td style="font-weight:600;position:sticky;left:0;z-index:1;background:var(--sf)">${rg}</td>
+    ${dodDates.map(d=>`<td class="r">${dodMap[rg]?.[d]?fC(dodMap[rg][d]):''}</td>`).join('')}
+    <td class="r" style="font-weight:600">${fC(dodRowTot[rg]||0)}</td></tr>`).join('')}
+  <tr style="background:var(--sf2);font-weight:700;border-top:2px solid var(--bd)">
+    <td style="position:sticky;left:0;z-index:1;background:var(--sf2)">Total</td>
+    ${dodDates.map(d=>`<td class="r">${dodColTot[d]?fC(dodColTot[d]):''}</td>`).join('')}
+    <td class="r">${fC(dodGrand)}</td></tr></tbody>`;
+
+  // Dealer × Date matrix (last 10 calendar days, newest first, paginated + searchable)
+  const cut30=new Date(Date.now()-10*864e5);
+  const dates30=[...new Set(cFilt.filter(r=>new Date(r.posting_date)>=cut30).map(r=>(r.posting_date||'').slice(0,10)).filter(Boolean))].sort().reverse();
+  const d30byDealer={};
+  cFilt.filter(r=>new Date(r.posting_date)>=cut30).forEach(r=>{
+    const d=r.party_name||'',dt=(r.posting_date||'').slice(0,10),v=r.paid_amount||0;
+    if(!d30byDealer[d])d30byDealer[d]={};
+    d30byDealer[d][dt]=(d30byDealer[d][dt]||0)+v;
+  });
+  let d30All=Object.entries(d30byDealer).map(([n,m])=>({n,tot:dates30.reduce((s,d)=>s+(m[d]||0),0),m})).sort((a,b)=>b.tot-a.tot);
+  if(d30Q)d30All=d30All.filter(r=>r.n.toLowerCase().includes(d30Q));
+  const d30pages=Math.ceil(d30All.length/dPS)||1;d30P=Math.min(d30P,d30pages);
+  const d30Sl=d30All.slice((d30P-1)*dPS,d30P*dPS);
+  const d30ColTot={};dates30.forEach(d=>{d30ColTot[d]=d30All.reduce((s,r)=>s+(r.m[d]||0),0);});
+  const d30Grand=d30All.reduce((s,r)=>s+r.tot,0);
+  document.getElementById('d30-tbl').innerHTML=`<thead><tr>
+    <th style="position:sticky;left:0;z-index:2;background:var(--sf2)">Dealer</th>
+    ${dates30.map(d=>`<th class="r">${d.slice(5)}</th>`).join('')}
+    <th class="r">Total</th></tr></thead>
+  <tbody>${d30Sl.map(r=>`<tr>
+    <td class="nm" style="position:sticky;left:0;z-index:1;background:var(--sf)" title="${r.n}">${r.n}</td>
+    ${dates30.map(d=>`<td class="r">${r.m[d]?fC(r.m[d]):''}</td>`).join('')}
+    <td class="r" style="font-weight:600;color:var(--g)">${fC(r.tot)}</td></tr>`).join('')}
+  <tr style="background:var(--sf2);font-weight:700;border-top:2px solid var(--bd)">
+    <td style="position:sticky;left:0;z-index:1;background:var(--sf2)">Total</td>
+    ${dates30.map(d=>`<td class="r">${d30ColTot[d]?fC(d30ColTot[d]):''}</td>`).join('')}
+    <td class="r">${fC(d30Grand)}</td></tr></tbody>`;
+  const d30pag=document.getElementById('d30pag');
+  d30pag.innerHTML=`<button class="pbtn" id="d30-p" ${d30P===1?'disabled':''}>← Prev</button><span>Page ${d30P}/${d30pages} · ${d30All.length} dealers</span><button class="pbtn" id="d30-n" ${d30P>=d30pages?'disabled':''}>Next →</button>`;
+  document.getElementById('d30-p').onclick=()=>{d30P--;renderColl();};
+  document.getElementById('d30-n').onclick=()=>{d30P++;renderColl();};
 
   // Dealer MOM
   const dmMap={};
@@ -471,28 +554,17 @@ function renderColl(){
   document.getElementById('dm-p').onclick=()=>{dmomP--;renderColl();};
   document.getElementById('dm-n').onclick=()=>{dmomP++;renderColl();};
 
-  // Dealer last 30 days
-  const d30Map={};
-  cFilt.filter(r=>new Date(r.posting_date)>=cut30).forEach(r=>{const d=r.party_name||'?',v=r.paid_amount||0;d30Map[d]=(d30Map[d]||0)+v;});
-  let d30Rows=Object.entries(d30Map).map(([n,tot])=>({n,tot})).sort((a,b)=>b.tot-a.tot);
-  const d30pages=Math.ceil(d30Rows.length/dPS)||1;d30P=Math.min(d30P,d30pages);
-  const d30sl=d30Rows.slice((d30P-1)*dPS,d30P*dPS);
-  document.getElementById('d30-tbl').innerHTML=`<thead><tr><th>Dealer</th><th class="r">Last 30 Days</th></tr></thead>
-  <tbody>${d30sl.map(d=>`<tr><td class="nm" title="${d.n}">${d.n}</td><td class="r" style="color:var(--g);font-weight:600">${fC(d.tot)}</td></tr>`).join('')}</tbody>`;
-  const d30pag=document.getElementById('d30pag');
-  d30pag.innerHTML=`<button class="pbtn" id="d3-p" ${d30P===1?'disabled':''}>← Prev</button><span>Page ${d30P}/${d30pages} · ${d30Rows.length} dealers</span><button class="pbtn" id="d3-n" ${d30P>=d30pages?'disabled':''}>Next →</button>`;
-  document.getElementById('d3-p').onclick=()=>{d30P--;renderColl();};
-  document.getElementById('d3-n').onclick=()=>{d30P++;renderColl();};
+  // (Dealer × Date matrix rendered above)
 }
-['fc-reg','fc-from','fc-to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{dmomP=1;d30P=1;renderColl();}));
+['fc-from','fc-to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{dmomP=1;d30P=1;renderColl();}));
 document.getElementById('fc-rst').addEventListener('click',()=>{
-  document.getElementById('fc-reg').value='';if(cDS)cDS.reset();
+  if(window._cRegMS)window._cRegMS.reset();if(cDS)cDS.reset();d30Q='';document.getElementById('fc-d30-q').value='';
   const dates=cAll.map(r=>r.posting_date).filter(Boolean).sort();
-  if(dates.length){document.getElementById('fc-from').value=dates[0].slice(0,10);document.getElementById('fc-to').value=dates[dates.length-1].slice(0,10);}
-  dmomP=1;d30P=1;renderColl();
+  if(dates.length){const fd=dates[0].slice(0,10);document.getElementById('fc-from').value=fd.slice(0,8)+'01';document.getElementById('fc-to').value=dates[dates.length-1].slice(0,10);}
+  dmomP=1;d30P=1;d30Q='';document.getElementById('fc-d30-q').value='';renderColl();
 });
 document.getElementById('fc-mom-q').addEventListener('input',e=>{dmomQ=e.target.value.toLowerCase();dmomP=1;renderColl();});
-window.addEventListener('resize',()=>{if(document.getElementById('tab-collection').classList.contains('active'))renderColl();});
+document.getElementById('fc-d30-q').addEventListener('input',e=>{d30Q=e.target.value.toLowerCase();d30P=1;renderColl();});
 
 // ════════════════════════════════════════════════════════
 // TAB 3 – COHORT
@@ -502,30 +574,26 @@ let coAll=[],coDS=null;
 async function initCohort(){
   const d=await jf('data/cohort.json');if(!d)return;
   coAll=d;
-  const sms=[...new Set(coAll.map(r=>r['Sale Month']))].sort((a,b)=>{
+  const sms=[...new Set(coAll.filter(r=>(r['Sale Month Sort']||0)>=202504).map(r=>r['Sale Month']))].sort((a,b)=>{
     const sa=coAll.find(r=>r['Sale Month']===a)?.['Sale Month Sort']||0;
     const sb=coAll.find(r=>r['Sale Month']===b)?.['Sale Month Sort']||0;
     return sa-sb;
   });
-  const mf=document.getElementById('fco-m');
-  sms.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;mf.appendChild(o);});
+  window._coMMS=makeMultiDrop('fco-m-wrap','fco-m-btn','fco-m-drop',sms,()=>renderCohort());
 
-  // Dealer dropdown sorted by total invoice desc
+  // Dealer multi-select (searchable) — sorted by total invoice desc
   const dTot={};
   coAll.forEach(r=>{const n=r.customer_name||'';dTot[n]=(dTot[n]||0)+(r.sub_total||0);});
   const dSorted=Object.entries(dTot).sort((a,b)=>b[1]-a[1]).map(([k])=>k).filter(Boolean);
-  coDS=makeSearchDrop('co-dsel-wrap','co-dsel-inp','co-dsel-drop',
-    ()=>dSorted.map(v=>({value:v,label:v})),
-    ()=>renderCohort()
-  );
+  coDS=makeMultiDrop('co-dsel-wrap','co-dsel-btn','co-dsel-drop',dSorted,()=>renderCohort(),true);
   renderCohort();
 }
 
 function renderCohort(){
   if(!coAll.length)return;
-  const selM=document.getElementById('fco-m').value;
-  const dealer=coDS?coDS.getVal():'';
-  let data=coAll.filter(r=>(!selM||r['Sale Month']===selM)&&(!dealer||r.customer_name===dealer));
+  const selMs=window._coMMS?window._coMMS.getVals():[];
+  const dealers=coDS?coDS.getVals():[];
+  let data=coAll.filter(r=>(!selMs.length||selMs.includes(r['Sale Month']))&&(!dealers.length||dealers.includes(r.customer_name))&&(r['Sale Month Sort']||0)>=202504);
 
   const smSet=new Set(),cmSet=new Set();
   data.forEach(r=>{smSet.add(r['Sale Month']);cmSet.add(r['Collection Month']);});
@@ -545,17 +613,20 @@ function renderCohort(){
   const hc=v=>{if(!v)return'';const r=v/maxV;return r>.8?'h5':r>.6?'h4':r>.4?'h3':r>.2?'h2':'h1';};
 
   document.getElementById('mxa').innerHTML=`<table class="mx">
-    <thead><tr><th>Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':cm==='paid before invoice'?'color:var(--tx3)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
+    <thead><tr><th class="stick">Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':cm==='paid before invoice'?'color:var(--tx3)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
     <tbody>${sms.map(sm=>`<tr><td class="sl">${sm}</td>${cms.map(cm=>{const v=piv[sm]?.[cm]||0;return`<td class="r ${hc(v)}">${v?fC(v):''}</td>`;}).join('')}<td class="r" style="font-weight:600">${fC(rTot[sm]||0)}</td></tr>`).join('')}
-    <tr class="tot"><td>Total</td>${cms.map(cm=>`<td class="r">${fC(cTot[cm]||0)}</td>`).join('')}<td class="r">${fC(grand)}</td></tr></tbody></table>`;
+    <tr class="tot"><td class="sl">Total</td>${cms.map(cm=>`<td class="r">${fC(cTot[cm]||0)}</td>`).join('')}<td class="r">${fC(grand)}</td></tr></tbody></table>`;
 
+  // % heat — max non-Pending pct across all cells for colour scale
+  const maxP=Math.max(...sms.flatMap(sm=>cms.filter(cm=>cm!=='Pending'&&cm!=='paid before invoice').map(cm=>{const rt=rTot[sm]||1;return(piv[sm]?.[cm]||0)/rt;})))||1;
+  const hcP=p=>{if(!p)return'';const r=p/maxP;return r>.8?'h5':r>.6?'h4':r>.4?'h3':r>.2?'h2':'h1';};
   document.getElementById('mxp').innerHTML=`<table class="mx">
-    <thead><tr><th>Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
-    <tbody>${sms.map(sm=>{const rt=rTot[sm]||1;return`<tr><td class="sl">${sm}</td>${cms.map(cm=>{const v=piv[sm]?.[cm]||0,p=v/rt;return`<td class="r" style="${cm==='Pending'&&p>0?'color:var(--w)':''}">${p?fP2(p):''}</td>`;}).join('')}<td class="r" style="font-weight:600">100.00%</td></tr>`;}).join('')}
-    <tr class="tot"><td>Total</td>${cms.map(cm=>`<td class="r">${grand?fP2((cTot[cm]||0)/grand):''}</td>`).join('')}<td class="r">100.00%</td></tr></tbody></table>`;
+    <thead><tr><th class="stick">Sale Month</th>${cms.map(cm=>`<th class="r" style="${cm==='Pending'?'color:var(--w)':cm==='paid before invoice'?'color:var(--tx3)':''}">${cm}</th>`).join('')}<th class="r">Total</th></tr></thead>
+    <tbody>${sms.map(sm=>{const rt=rTot[sm]||1;return`<tr><td class="sl">${sm}</td>${cms.map(cm=>{const v=piv[sm]?.[cm]||0,p=v/rt;const isPend=cm==='Pending',isPbi=cm==='paid before invoice';return`<td class="r ${isPend||isPbi?'':hcP(p)}" style="${isPend&&p>0?'color:var(--w)':isPbi&&p>0?'color:var(--tx3)':''}">${p?fP2(p):''}</td>`;}).join('')}<td class="r" style="font-weight:600">100.00%</td></tr>`;}).join('')}
+    <tr class="tot"><td class="sl">Total</td>${cms.map(cm=>`<td class="r">${grand?fP2((cTot[cm]||0)/grand):''}</td>`).join('')}<td class="r">100.00%</td></tr></tbody></table>`;
 }
-document.getElementById('fco-m').addEventListener('change',renderCohort);
-document.getElementById('fco-rst').addEventListener('click',()=>{document.getElementById('fco-m').value='';if(coDS)coDS.reset();renderCohort();});
+document.getElementById('fco-rst').addEventListener('click',()=>{if(window._coMMS)window._coMMS.reset();if(coDS)coDS.reset();renderCohort();});
+
 
 // boot — sequential to avoid overloading the single-threaded dev server
 initOut().then(()=>initColl()).then(()=>initCohort());

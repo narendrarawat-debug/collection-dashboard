@@ -47,11 +47,11 @@ EVALUATE
 FILTER('dealer outstanding', 'dealer outstanding'[Is Dealer Match] = TRUE())
 """)
 
-    # 2. Daily collection (last 90 days)
+    # 2. Daily collection (last 365 days so user can browse any month)
     daily_collection = run_dax(token, """
 EVALUATE
 SELECTCOLUMNS(
-    FILTER('Daily Collection', 'Daily Collection'[posting_date] >= TODAY() - 90),
+    FILTER('Daily Collection', 'Daily Collection'[posting_date] >= TODAY() - 365),
     "posting_date", 'Daily Collection'[posting_date],
     "party_name", 'Daily Collection'[party_name],
     "paid_amount", 'Daily Collection'[paid_amount],
@@ -60,54 +60,112 @@ SELECTCOLUMNS(
 )
 """)
 
-    # 3. Cohort — filter to Is Bike Invoice = TRUE, only columns needed for pivot
-    try:
-        cohort_raw = run_dax(token, """
+    # 3. Cohort — fetch raw fields, replicate PBI Collection Amount DAX logic in Python
+    cohort_raw = run_dax(token, """
 EVALUATE
 SELECTCOLUMNS(
-    CALCULATETABLE(
-        'invoice level sales',
-        'invoice level sales'[Is Bike Invoice] = TRUE()
+    FILTER(
+        'invoice collection date',
+        'invoice collection date'[Is Dealer Match] = TRUE()
     ),
-    "customer_name", 'invoice level sales'[customer_name],
-    "sub_total", 'invoice level sales'[sub_total],
-    "Sale Month", 'invoice level sales'[Sale Month],
-    "Sale Month Sort", 'invoice level sales'[Sale Month Sort],
-    "Collection Month", 'invoice level sales'[Collection Month],
-    "Collection Month Sort", 'invoice level sales'[Collection Month Sort]
+    "customer_name", 'invoice collection date'[customer_name],
+    "invoice_amount", 'invoice collection date'[invoice_amount],
+    "paid_amount", 'invoice collection date'[paid_amount],
+    "balance_amount", 'invoice collection date'[balance_amount],
+    "erp_status", 'invoice collection date'[erp_status],
+    "invoice_date", 'invoice collection date'[invoice_date],
+    "last_payment_date", 'invoice collection date'[last_payment_date]
 )
 """)
-    except Exception as e:
-        print(f"Warning: cohort with Is Bike Invoice failed ({e}), retrying without filter")
-        cohort_raw = run_dax(token, """
-EVALUATE
-SELECTCOLUMNS(
-    'invoice level sales',
-    "customer_name", 'invoice level sales'[customer_name],
-    "sub_total", 'invoice level sales'[sub_total],
-    "Sale Month", 'invoice level sales'[Sale Month],
-    "Sale Month Sort", 'invoice level sales'[Sale Month Sort],
-    "Collection Month", 'invoice level sales'[Collection Month],
-    "Collection Month Sort", 'invoice level sales'[Collection Month Sort]
-)
-""")
+    print(f"  cohort raw rows: {len(cohort_raw)}")
 
-    # Pre-aggregate to dealer × Sale Month × Collection Month to keep JSON small
-    from collections import defaultdict
-    agg = {}
+    from datetime import datetime
+
+    MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+    def fmt_month(dt_str):
+        """'2025-08-15' → ('Aug 2025', 202508)"""
+        if not dt_str:
+            return None, None
+        try:
+            dt = datetime.fromisoformat(str(dt_str)[:10])
+            label = f"{MONTH_NAMES[dt.month-1]} {dt.year}"
+            sort = dt.year * 100 + dt.month
+            return label, sort
+        except Exception:
+            return None, None
+
+    agg = {}   # (dealer, sale_month, coll_month) → amount
     sm_sort_map, cm_sort_map = {}, {}
+
     for r in cohort_raw:
-        sm, cm, dealer = r.get('Sale Month',''), r.get('Collection Month',''), r.get('customer_name','')
-        key = (dealer, sm, cm)
-        agg[key] = agg.get(key, 0) + (r.get('sub_total') or 0)
-        sm_sort_map[sm] = r.get('Sale Month Sort', 0)
-        cm_sort_map[cm] = r.get('Collection Month Sort', 0)
+        dealer = r.get('customer_name') or ''
+        inv_amt = r.get('invoice_amount') or 0
+        paid = r.get('paid_amount') or 0
+        bal = r.get('balance_amount') or 0
+        erp = r.get('erp_status') or ''
+        inv_date = r.get('invoice_date')
+        lpd = r.get('last_payment_date')
+
+        sm_label, sm_sort = fmt_month(inv_date)
+        if not sm_label:
+            continue
+
+        is_resolved = erp in ('Paid', 'Credit Note Issued')
+        is_genuine_partial = (not is_resolved) and paid > 0 and bool(lpd)
+
+        # Compute resolved bucket
+        lpd_label, lpd_sort = fmt_month(lpd)
+        inv_dt = datetime.fromisoformat(str(inv_date)[:10]) if inv_date else None
+        lpd_dt = datetime.fromisoformat(str(lpd)[:10]) if lpd else None
+
+        paid_before_inv = bool(lpd_dt and inv_dt and lpd_dt < inv_dt and (is_resolved or paid > 0))
+
+        if is_resolved and not lpd:
+            bucket = 'Pending'
+        elif paid_before_inv:
+            bucket = 'paid before invoice'
+        elif is_resolved:
+            bucket = lpd_label
+        elif is_genuine_partial:
+            bucket = lpd_label
+        else:
+            bucket = 'Pending'
+
+        # Sort for bucket
+        if bucket == 'Pending':
+            b_sort = 999997
+        elif bucket == 'paid before invoice':
+            b_sort = 999999
+        else:
+            b_sort = lpd_sort or 0
+
+        sm_sort_map[sm_label] = sm_sort
+        cm_sort_map[bucket] = b_sort
+
+        # Distribute amounts
+        if is_resolved:
+            key = (dealer, sm_label, bucket)
+            agg[key] = agg.get(key, 0) + inv_amt
+        elif is_genuine_partial:
+            # paid portion → collection bucket
+            key = (dealer, sm_label, bucket)
+            agg[key] = agg.get(key, 0) + paid
+            # balance → Pending
+            key2 = (dealer, sm_label, 'Pending')
+            agg[key2] = agg.get(key2, 0) + bal
+            cm_sort_map['Pending'] = 999997
+        else:
+            key = (dealer, sm_label, 'Pending')
+            agg[key] = agg.get(key, 0) + inv_amt
+            cm_sort_map['Pending'] = 999997
+
     cohort = [
         {'customer_name': k[0], 'Sale Month': k[1], 'Sale Month Sort': sm_sort_map[k[1]],
          'Collection Month': k[2], 'Collection Month Sort': cm_sort_map[k[2]], 'sub_total': v}
         for k, v in agg.items()
     ]
-    print(f"  (aggregated {len(cohort_raw)} invoice rows → {len(cohort)} pivot rows)")
+    print(f"  (aggregated → {len(cohort)} pivot rows)")
 
     os.makedirs("data", exist_ok=True)
     with open("data/dealer_outstanding.json", "w", encoding="utf-8") as f:
