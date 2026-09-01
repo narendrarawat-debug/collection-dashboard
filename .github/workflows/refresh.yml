@@ -10,6 +10,9 @@ on:
     - cron: "30 12 * * *"  # 6:00pm IST
   workflow_dispatch:        # manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   fetch-and-commit:
     runs-on: ubuntu-latest
